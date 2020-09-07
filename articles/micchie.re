@@ -49,9 +49,9 @@ PlantUMLは、テキストをUMLに変換、出力できるツールです。シ
  * マインドマップ
  * WBS
 
-図2.1は、次のコードから生成されています。
+@<img>{001}は、次のコードから生成されています。
 
-//emlist[図2.1のコード]{
+//emlist{
 @startuml
 participant "自転車" as Bicycle #lightpink
 participant "クロクマ" as BlackBear #lightskyblue
