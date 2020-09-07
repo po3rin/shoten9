@@ -15,7 +15,7 @@ UMLのクラス図をGoで書くことができるようになります。
 
 == UMLとは
 UML（Unified Modeling Language）@<fn>{UML}は、設計をモデル化するときの記法を統一した言語です。システムの構造や振る舞いを図で表すことができ、次のようなバリエーションがあります。（一部のみ抜粋）
-//footnote[UML][https://www.uml.org]
+//footnote[UML][@<href>{https://www.uml.org}]
 
 ==== 構造図
  * クラス図
@@ -34,10 +34,10 @@ UML（Unified Modeling Language）@<fn>{UML}は、設計をモデル化すると
 UMLを書く方法はさまざまです。Lucidchart@<fn>{Lucidchart}、Cacoo@<fn>{Cacoo}、draw.io@<fn>{draw.io}など、オンラインのツールは豊富です。
 さらに、テキストでUMLを書くこともできます。テキストで表現できるUMLは変更管理のしやすさを鑑みても大変魅力的です。
 テキストでUMLを書くことができるPlantUML@<fn>{PlantUML}について、次の章で紹介をします。
-//footnote[Lucidchart][https://www.lucidchart.com/pages/ja/examples/uml-tool]
-//footnote[Cacoo][https://cacoo.com/ja/]
-//footnote[draw.io][https://app.diagrams.net]
-//footnote[PlantUML][https://plantuml.com]
+//footnote[Lucidchart][@<href>{https://www.lucidchart.com/pages/ja/examples/uml-tool}]
+//footnote[Cacoo][@<href>{https://cacoo.com/ja/}]
+//footnote[draw.io][@<href>{https://app.diagrams.net}]
+//footnote[PlantUML][@<href>{https://plantuml.com}]
 
 == PlantUML
 PlantUMLは、テキストをUMLに変換、出力できるツールです。シーケンス図においてはアスキーアートで出力することもできます。
@@ -77,10 +77,10 @@ PlantUML公式のオンラインサーバを利用せずに、手元のPCでPlan
 次に必要なものはグラフデータを描画するためのGraphviz@<fn>{GraphvizDownload}です。
 シーケンス図とアクティビティ図以外のUMLを出力するには必要なソフトウェアです。
 インストールしておきましょう。
-//footnote[GraphvizDownload][http://www.graphviz.org/download/]
+//footnote[GraphvizDownload][@<href>{http://www.graphviz.org/download/}]
 
 最後に、PlantUMLの実行ファイルはダウンロードページ@<fn>{PlantUMLDownload}から入手できます。
-//footnote[PlantUMLDownload][https://plantuml.com/ja/download]
+//footnote[PlantUMLDownload][@<href>{https://plantuml.com/ja/download}]
 
 macOSの場合は、Homebrewからインストールできます。
 
@@ -133,7 +133,7 @@ UMLをテキストで書けるようになりました。
 いよいよ、UMLをGoで書きはじめます。
 
 この章では、@<code>{jfeliu007/goplantuml}@<fn>{goplantuml}というツールを利用することで、GoのコードからPlantUMLのクラス図を生成する方法を紹介します。
-//footnote[goplantuml][https://github.com/jfeliu007/goplantuml/]
+//footnote[goplantuml][@<href>{https://github.com/jfeliu007/goplantuml/}]
 
 === jfeliu007/goplantumlのインストール
 @<code>{jfeliu007/goplantuml}のGitHubページに記載されているとおりにインストールします。
@@ -342,8 +342,8 @@ Go製のUMLパッケージは、@<code>{jfeliu007/goplantuml}以外にもいく�
 
 //image[003][filepathパッケージ]
 
-//footnote[apitest-plantuml][https://github.com/steinfletcher/apitest-plantuml]
-//footnote[plantuml-go][https://github.com/yogendra/plantuml-go]
-//footnote[gouml][https://github.com/kazukousen/gouml]
+//footnote[apitest-plantuml][@<href>{https://github.com/steinfletcher/apitest-plantuml}]
+//footnote[plantuml-go][@<href>{https://github.com/yogendra/plantuml-go}]
+//footnote[gouml][@<href>{https://github.com/kazukousen/gouml}]
 
 ===[/column]
