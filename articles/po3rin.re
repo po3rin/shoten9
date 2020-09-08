@@ -14,7 +14,7 @@
 辞書式順序とは文字列の大小の順序の決め方です。文字列T,Uを先頭から1文字ずつ比較していき、初めて異なる文字が出てきた時に、その大小関係で順序が決まります。
 Goの文字列比較では辞書式順序が採用されています(@<list>{string-order})。
 
-//list[string-order][string-order][go]{
+//list[string-order][Goの文字列比較は辞書式順序で大小が決まる][go]{
 func main() {
 	if "aaab" < "aaac" {
         fmt.Println("aaab より aaacの方が大きい")
@@ -22,32 +22,32 @@ func main() {
 }
 //}
 
-=== 接尾辞
+=== Suffix(接尾辞)
 
-文字列@<code>{"T"}の任意の@<code>{"i"}番目から最後までの部分文字列を@<b>{接尾辞(Suffix)}と呼びます。
+文字列@<code>{"T"}の任意の@<code>{"i"}番目から最後までの部分文字列を@<b>{Suffix(接尾辞)}と呼びます。
 GoにはSuffixとして部分文字列が存在するかをチェックするメソッド@<code>{"func HasSuffix(s, suffix string) bool"}があります(@<list>{suffix})。
 
-//list[suffix][suffix][go]{
+//list[suffix][GoにはSuffixに関する関数がある][go]{
 func main() {
 	fmt.Println(strings.HasSuffix("Amigo", "go")) // true
-    fmt.Println(strings.HasSuffix("Amigo", "migo")) // true
+	fmt.Println(strings.HasSuffix("Amigo", "migo")) // true
 	fmt.Println(strings.HasSuffix("Amigo", "")) //true
 }
 //}
 
 === Suffix Array
 
-接尾辞を使ったデータ構造である@<b>{接尾辞配列(Suffix Array)}を紹介します。Suffix Arrayはのちに紹介するBWTの構築にも利用されます。
-文字列Tの全ての接尾辞を辞書式順序でソートし、そのindexを格納した配列です。例えば@<b{abcab}>のSuffixArrayを単純に構築するときはまず接尾辞のリストを作り、
+Suffixを使ったデータ構造である@<b>{Suffix Array(接尾辞配列)}を紹介します。Suffix Arrayはのちに紹介するBWTの構築にも利用されます。
+文字列Tの全てのSuffixを辞書式順序でソートし、そのindexを格納した配列です。例えば@<b{abcab}>のSuffixArrayを単純に構築するときはまずSuffixのリストを作り、
 それを辞書式順序でソートし、そのindexをとります(@<img>{suffixarray})。
 
 //image[suffixarray]["abracadarba"からSuffix Arrayを構築し、文字列パターンマッチ][scale=1]{
 //}
 
-@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。接尾辞をソートしているので二分探索で探索が可能です。
+@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。Suffixをソートしているので二分探索で探索が可能です。
 GoではSuffix Arrayが標準パッケージで提供されています。
 
-//list[suffix][suffix][go]{
+//list[suffix][suffixarray パッケージ][go]{
 import (
     suffixarray
     // ...
@@ -75,9 +75,9 @@ BWTはもともと、データ圧縮などの為に開発されたアルゴリ�
 
 例えば@<code>{"abracadabra"}という文字列からBWTを構築する場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、他の文字より)を末尾に追加し、
 @<code>{"abracadabra$"}という形にした後、BWTすると@<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形になります。
-当然、BWTは可逆変換なので、@<code>{"ard$rcaaaabb"}から@<code>{"abracadabra"}という元の文字列に戻せます(@<list>{bwt-example})。
+当然、BWTは可逆変換なので、@<code>{"ard$rcaaaabb"}から@<code>{"abracadabra$"}という元の文字列に戻せます(@<list>{bwt-example})。
 
-//list[bwt-example][bwt-example][go]{
+//list[bwt-example][BWT関数での文字列変換の例][go]{
 func main() {
     t := "abracadabra"
 	bwt := BWT(t) // 後ほど実装
@@ -90,11 +90,22 @@ func main() {
 
 == BWTをGoで実装する
 
-ではその仕組みをGoで実装しながら追っていきましょう。まずはBWT構築です。構築には前節で紹介したSuffix Arrayを利用します。
+ではその仕組みをGoで実装しながら追っていきましょう。まずはBWT構築です。
+BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです(@<img>{suffixarray-build})。
 
-//list[bwt-build][bwt-build][go]{
+//image[suffixarray-build]["abracadarba$"からBWTを構築][scale=1]{
+//}
+
+しかし、なぜこれで同じ文字が出現しやすくなるのでしょうか。各文字をそれに続くSuffixでソートするということは、
+後続の文字列が似ている文字が連続で出現しやすくなるということです。
+例えば、@<b>{"the"}という頻出ワードの@<b>{"t"}は後ろの@<b>{"he"}でソートされるので@<b>{"t"}は連続して出やすくなります。
+
+それでは実際にGoでBWTを実装してみましょう。最初にSuffix Arrayを構築し、そこからBWTを構築します(@<list>{bwt-build})。
+
+//list[bwt-build][BWT関数の実装][go]{
 func BWT(t string) string {
-    // Suffix Array を構築 ------------------
+
+    // Suffix Array ------------------
 	t += "$"
 	sa := make([]string, len(t))
 	for i := 0; i < len(t); i++ {
@@ -113,19 +124,74 @@ func BWT(t string) string {
 	}
 	return result
 }
-//}
 
-//list[bwt-build-run][bwt-build-run][go]{
-func main() {
-	b := BWT("Go is expressive, concise, clean, and efficient. Its concurrency mechanisms make it easy to write programs that get the most out of multicore and networked machines, while its novel type system enables flexible and modular program construction. Go compiles quickly to machine code yet has the convenience of garbage collection and the power of run-time reflection. It's a fast, statically typed, compiled language that feels like a dynamically typed, interpreted language.")
-	fmt.Println(b)
-	s := BWTInverse(b)
-	fmt.Println(s)
+// index指定で1文字だけ取得する関数
+func GetChar(t string, i int) string {
+	rs := []rune(t)
+	if i < 0 {
+		return string(rs[len(rs)+i])
+	}
+	return string(rs[i])
 }
 //}
 
+@<code>{BWT}関数を実際に使うと正しく動くことが分かります(@<list>{bwt-build-run})。
+
+//list[bwt-build-run][BWT関数の利用例][go]{
+func main() {
+	b := BWT("abracadabra")
+	fmt.Println(b) // ard$rcaaaabb
+}
+//}
+
+今回はSuffix Arrayを使ってBWTを構築しましたが、別の構築方法を使うとより高速に構築できます。
+
 == BWT文字列の復元
 
-== ランレングス圧縮でBWTの威力をみる
+//list[bwt-inverse][BWT文字列の復元][go]{
+func BWTInverse(t string) string {
+
+	// Cの構築 ------------
+	C := make(map[rune]int)
+	for _, c := range t {
+		v, ok := C[c]
+		if !ok {
+			C[c] = 1
+			continue
+		}
+		C[c] = v + 1
+	}
+
+	sig := Deduplicate(strings.Split(t, ""))
+
+	var sum int
+	for _, c := range sig {
+		r := []rune(c)[0]
+		cur := C[r]
+		C[r] = sum
+		sum = sum + cur
+	}
+
+	// LF-mapping ----------
+
+	psi := make(map[int]int)
+	for i, c := range t {
+		psi[C[c]] = i
+		C[c] = C[c] + 1
+	}
+
+	// inverse -------------
+
+	var p int
+	r := []rune(t)
+	result := make([]rune, len(r))
+	for i := range t {
+		p = psi[p]
+		result[i] = r[p]
+	}
+
+	return string(result)
+}
+//}
 
 == BWTを使った圧縮全文索引
