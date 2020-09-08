@@ -57,9 +57,9 @@ func Example() {
 	t := "abracadabra"
 	sa := suffixarray.New([]byte(t))
 
-    // abが出現する位置を返す。
+	// abが出現する位置を返す。
 	offsets := index.Lookup([]byte("ab"), -1)
-    fmt.Println(offsets) // [7, 0]
+	fmt.Println(offsets) // [7, 0]
 }
 //}
 
@@ -79,12 +79,12 @@ BWTはもともと、データ圧縮などの為に開発されたアルゴリ�
 
 //list[bwt-example][BWT関数での文字列変換の例][go]{
 func main() {
-    t := "abracadabra"
+	t := "abracadabra"
 	bwt := BWT(t) // 後ほど実装
-    fmt.Println(bwt) // ard$rcaaaabb
+	fmt.Println(bwt) // ard$rcaaaabb
 
-    bwtinv := BWTInverse(bwt) // 後ほど実装
-    fmt.Println(bwtinv) // abracadabra
+	bwtinv := BWTInverse(bwt) // 後ほど実装
+	fmt.Println(bwtinv) // abracadabra
 }
 //}
 
@@ -105,7 +105,7 @@ BWTは文字列Tを構成する各文字を、それに続くSuffixをキーと�
 //list[bwt-build][BWT関数の実装][go]{
 func BWT(t string) string {
 
-    // Suffix Array ------------------
+	// Suffix Array ------------------
 	t += "$"
 	sa := make([]string, len(t))
 	for i := 0; i < len(t); i++ {
@@ -113,7 +113,7 @@ func BWT(t string) string {
 	}
 	sort.Strings(sa)
 
-    // Suffix Array を利用してBWTを構築 -------
+	// Suffix Array を利用してBWTを構築 -------
 	var result string
 	for _, v := range sa {
 		if len(v) < len(t) {
