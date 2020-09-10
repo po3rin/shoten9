@@ -5,25 +5,41 @@
 
 == 概要
 iCalendar形式はRFC 5545@<fn>{rfc_5545_link}で詳細な仕様が定義されています。
-RFC 5545@<fn>{rfc_5545_link}では次の仕様が定められています。
 
- 1. iCalendar形式の文字コードに関する仕様
- 2. iCalendarファイル内のデータの表現に関する仕様
- 3. iCalendarで利用されるデータの型に関する仕様
- 4. 各種コンポーネントに関する仕様
-
-RFC 5545に従って記述されたiCalendar形式のファイルの中身をGoで扱うためには、Goの構造体のインスタンスに変換する必要があります。
+RFC 5545に従って記述されたiCalendar形式のファイルの内容をGoで扱うためには、Goの構造体のインスタンスに変換する必要があります。
 Goの構造体にするためには、ファイルの文字列を解釈し変換します。
 
 この操作は言語処理系の実装における字句解析、構文解析と同じ考えを用いて実装できます。
 まずiCalendar形式のファイルを字句解析します。
-字句解析で得られた字句のスライスを構文解析し、iCalendarの構造体へ変換します。
+字句解析で得られた字句を構文解析し、iCalendarの構造体へ変換します。
+
+@<list>{example_input}の情報が記述されたファイルを@<list>{example_output}へ変換します。
+
+//list[example_input][]{
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+END:VCALENDAR
+//}
+
+//list[example_output][]{
+&ical.Calender{
+    ProdID: &property.ProdID{
+      Parameter: parameter.Container{},
+      Value:     "-//Google Inc//Google Calendar 70.9054//EN",
+    }
+    Version: &property.Version{
+        Parameter: parameter.Container{},
+        Max:       types.Text("2.0"),
+    },
+},
+//}
 
 //footnote[rfc_5545_link][@<href>{https://tools.ietf.org/html/rfc5545}]
 
 == iCalendarファイルの形式
 iCalendar形式のファイルの文字コードはUTF-8でなければいけません。@<fn>{ical_character_set}
-iCalendar形式のファイルはコンテツラインという単位で情報が記述されます。
+iCalendar形式のファイルはコンテンツラインという単位で情報が記述されます。
 iCalendarはコンポーネントと呼ばれるオブジェクトの入れ子構造で構成されています。
 コンポーネントは複数のコンテンツラインで構成されています。
 コンポーネントの始まりと終わりを表すコンテンツラインと、コンポーネントのプロパティの情報を表すコンテンツラインがあります。
@@ -89,7 +105,7 @@ Eventコンポーネントはイベントのタイトルや、終了時刻を持
 
 iCalendar形式のファイルをパースしてGoのオブジェクトに変換するためにはいくつかのステップを経由して変換します。
 
- 1. 文字列をコンテツラインに変換する
+ 1. 文字列をコンテンツラインに変換する
  2. コンテンツラインからコンポーネントのオブジェクトに変換する
 
 
@@ -178,7 +194,7 @@ type Parameter struct {
 コンテンツラインは複数行で1つのコンテンツラインを形成する場合があります。
 そのため、まず全ての行をチェックし、先頭の文字を確認します。
 もし、スペースもしくはタブ文字なら複数行のコンテンツラインの一部と見なします。
-最初の1文字を削り前の行と結合して、一つのコンテツラインになる文字列とします。
+最初の1文字を削り前の行と結合して、一つのコンテンツラインになる文字列とします。
 
 @<list>{build_raw_lines_to_string_slice}に実際のコードを示します。
 @<code>{bufio.Scanner}型を用いて1行ずつ読み込みながら、各行に対して先頭がスペースもしくはタブ文字かチェックを行います。
@@ -202,13 +218,13 @@ for scanner.Scan() {
 //}
 
 ==== 文字列から字句を取り出す字句解析器を生成する
-@<tt>{DTSTART:19980118T073000Z}という文字列を@<list>{token_slice}に示すトークンのスライス形式に変換します。
-トークンは単なる文字列を意味のある単位にまとめたものです。
-例えば@<list>{token_slice}の1行目は@<tt>{IDENT}という識別子を表すトークンです。
-その@<tt>{IDENT}という種類のトークンが@<tt>{DTSTART}という値を持っています。
-文字列からトークンの列へ変換する処理を字句解析と呼びます。
+@<tt>{DTSTART:19980118T073000Z}という文字列を@<list>{token_slice}に示す字句に変換します。
+字句は単なる文字列を意味のある単位にまとめたものです。
+例えば@<list>{token_slice}の1行目は@<tt>{IDENT}という識別子を表す字句です。
+その@<tt>{IDENT}という種類の字句が@<tt>{DTSTART}という値を持っています。
+文字列から字句の列へ変換する処理を字句解析と呼びます。
 
-//list[token_slice][生成したいトークンのスライス]{
+//list[token_slice][生成したい字句のスライス]{
 []token.Token{
     {Type: token.IDENT, Value: "DTSTART"},
     {Type: token.COLON, Value: ":"},
@@ -217,9 +233,9 @@ for scanner.Scan() {
 }
 //}
 
-文字列からコンテンツラインに変換する際に、トークンのスライスへの変換を挟むと変換処理が簡単になります。
+文字列からコンテンツラインに変換する際に、字句のスライスへの変換を挟むと変換処理が簡単になります。
 #@# 文字列からコンテンツラインに変換する際に、字句解析を挟むと変換処理が簡単になります。
-もし、トークンを使わずに正規表現で変換しようとすると、うまく行かないパターンが出てきます。
+もし、字句を使わずに正規表現で変換しようとすると、うまく行かないパターンが出てきます。
 例として、RFC 5545から引用した例@<fn>{example_hard_parsing_link}@<list>{example_input_hard_parsing}から@<list>{example_output_hard_parsing}の変換を考えます。
 
 //list[example_input_hard_parsing][正規表現などでコンテンツラインへ変換するのが難しい内容]{
@@ -296,7 +312,7 @@ func (l *Lexer) readChar() {
 //}
 
 字句解析器は入力の文字列、現在の字句解析器が読み終わった位置、先読みしている場所の位置、そして現在のチェックする文字を持っています。
-先読みしている位置と現在の位置を別に持つことで、文字列のトークンを作成するときに便利になるため保存しています。
+先読みしている位置と現在の位置を別に持つことで、文字列の字句を作成するときに便利になるため保存しています。
 
 @<code>{checkFunc}フィールドは文字列判定のための関数を保持しています。
 @<tt>{NAME}と@<tt>{VALUE}と@<tt>{PARAM}では文字列として認識できる文字が異なります。@<fn>{acceptable_character_definition}
@@ -380,7 +396,7 @@ func (l *Lexer) readString() string {
 字句解析器がフィールドとして持っている文字列チェック用の関数を用いて文字列チェックを行い、文字列が続く限り読み進めて行きます。
 
 
-==== トークンの列からコンテンツラインに変換する
+==== 字句からコンテンツラインに変換する
 字句解析器から字句が逐次取り出すことができました。
 字句解析の最後のステップとして字句解析器から取り出された字句を元にコンテンツラインを生成します。
 
@@ -591,7 +607,10 @@ func TestContentLine(t *testing.T) {
                     t.Fatal(err)
                 }
                 if err.Error() != tt.expectError.Error() {
-                    t.Fatalf("unexpected error:\n\texpect: %v\n\tgot: %v", tt.expectError.Error(), err.Error())
+                    t.Fatalf("unexpected error:\n\texpect: %v\n\tgot: %v",
+                        tt.expectError.Error(),
+                        err.Error(),
+                    )
                 }
             }
             if diff := cmp.Diff(tt.expectValue, cl); diff != "" {
@@ -688,10 +707,18 @@ func (p *Parser) parse() (*ical.Calender, error) {
             }
             return c, nil
         default:
-            return nil, fmt.Errorf("not %s:%s, got %v", property.NameBegin, component.TypeCalendar, l)
+            return nil, fmt.Errorf("not %s:%s, got %v",
+                property.NameBegin,
+                component.TypeCalendar,
+                l,
+            )
         }
     default:
-        return nil, fmt.Errorf("not %s:%s, got %v", property.NameBegin, component.TypeCalendar, l)
+        return nil, fmt.Errorf("not %s:%s, got %v",
+            property.NameBegin,
+            component.TypeCalendar,
+            l,
+        )
     }
 }
 //}
@@ -787,7 +814,7 @@ func (v *Version) UpdateVersion(params parameter.Container, min, max types.Text)
 
 バージョンのプロパティの仕様はRFC 5545のSection 3.7.4@<fn>{definition_version_link}で定義されています。
 このプロパティの値の型は@<tt>{TEXT}型と定義されています。
-コンテンツラインから@<tt>{TEXT}型への変換については@<sec>{}で説明します。
+コンテンツラインから@<tt>{TEXT}型への変換については@<hd>{値の型の変換}で説明します。
 しかし、バージョン番号の表現が定められています。
 この表現に一致しているかを値を設定する際に詳しくチェックします。
 
@@ -796,7 +823,7 @@ func (v *Version) UpdateVersion(params parameter.Container, min, max types.Text)
 @<list>{property_version_definition}の他にも多くの種類のプロパティがあります。
 全ては紹介できないため、より詳しく知りたい方はRFCを読むか、私のコードを読んでみてください。
 
-==== データの型の変換
+==== 値の型の変換
 プロパティの変換では、プロパティに値を渡す際に@<tt>{TEXT}型の値を渡しました。
 この@<tt>{TEXT}型の変数をコンテンツラインからどのようにして取得するのかを説明します。
 
