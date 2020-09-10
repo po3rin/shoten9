@@ -33,13 +33,13 @@ UML（Unified Modeling Language）@<fn>{UML}は、設計をモデル化すると
 
 UMLを書く方法はさまざまです。Lucidchart@<fn>{Lucidchart}、Cacoo@<fn>{Cacoo}、draw.io@<fn>{draw.io}など、オンラインのツールは豊富です。
 さらに、テキストでUMLを書くこともできます。テキストで表現できるUMLは変更管理のしやすさを鑑みても大変魅力的です。
-テキストでUMLを書くことができるPlantUML@<fn>{PlantUML}について、次の節で紹介をします。
+テキストでUMLを書くことができるPlantUML@<fn>{PlantUML}について、@<hd>{sectionName}で紹介をします。
 //footnote[Lucidchart][@<href>{https://www.lucidchart.com/pages/ja/examples/uml-tool}]
 //footnote[Cacoo][@<href>{https://cacoo.com/ja/}]
 //footnote[draw.io][@<href>{https://app.diagrams.net}]
 //footnote[PlantUML][@<href>{https://plantuml.com}]
 
-== PlantUML
+=={sectionName} PlantUML
 PlantUMLは、テキストをUMLに変換、出力できるツールです。シーケンス図においてはアスキーアートで出力することもできます。
 さらにUML以外にも次のような表現にも対応しており、常にに機能がアップデートされ続けています。
 
