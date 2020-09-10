@@ -107,7 +107,8 @@ GitHubやgmailを使うと簡単にアカウントを発行できます。
 また、利用方法によっては次の作業を事前にしておくとよいでしょう。
 
  * Git管理する場合は、あらかじめ@<tt>{git pull}（もしくは@<tt>{git init}）したディレクトリを用意する。
- * （VSCodeを使って開発する場合）LeetCodeのアカウントをGitHub連携しておくとログインが簡単。
+ * （VSCodeを使って開発する場合）LeetCodeのアカウントをGitHub連携しておく。
+ ** ログインが簡略化できます。
 
 === VSCodeを使ってLeetCodeに挑戦する
 VSCodeを使ってLeetcodeの問題を解く場合、VSCodeプラグインを利用することができます。
