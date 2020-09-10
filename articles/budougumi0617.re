@@ -32,7 +32,7 @@ LeetCodeはオンライン競技プログラミングコンテストが行われ
  * 関数の入出力を使うのでテストコードが書きやすい。
  * 自分の好きなプログラミング言語で挑戦することができる。
  * わからなくても解答や問題別掲示板で他の人の解答内容を見て勉強できる。
- * 3rdパーティのVSCodeプラグインやCLIツールなどが存在し、ローカルで解きやすい。
+ * 3rdパーティのVisual Studio Code（VSCode）プラグインやCLIツールなどが存在し、ローカルで解きやすい。
 
  デメリットとしては次の点が挙げられます。
 
@@ -94,7 +94,7 @@ LeetCodeも他の競技プログラミングコンテストサービスと同様
 しかし、入力補完を使ったり、テストコードを書いたり@<fn>{leetcode_test}したいときもあります。
 また、@<tt>{Git}を利用して解答を管理しておきたいというニーズもあると思います。
 LeetCodeにはローカルで解答の雛形の取得、提出などを基本操作を行うOSSが複数存在します。
-今回は私が利用したことのあるVS Codeプラグインと@<tt>{Rust}のCLIツールを紹介したいと思います。
+今回は私が利用したことのあるVSCodeプラグインと@<tt>{Rust}のCLIツールを紹介したいと思います。
 
 //footnote[leetcode_test][既定のテストケースを数個実行する機能は提供されています]
 
@@ -107,10 +107,10 @@ GitHubやgmailを使うと簡単にアカウントを発行できます。
 また、利用方法によっては次の作業を事前にしておくとよいでしょう。
 
  * Git管理する場合は、あらかじめ@<tt>{git pull}（もしくは@<tt>{git init}）したディレクトリを用意する。
- * （VS Codeを使って開発する場合）LeetCodeのアカウントをGitHub連携しておくとログインが簡単。
+ * （VSCodeを使って開発する場合）LeetCodeのアカウントをGitHub連携しておくとログインが簡単。
 
-=== VS Codeを使ってLeetCodeに挑戦する
-VS Codeを使ってLeetcodeの問題を解く場合、VS Codeプラグインを利用することができます。
+=== VSCodeを使ってLeetCodeに挑戦する
+VSCodeを使ってLeetcodeの問題を解く場合、VSCodeプラグインを利用することができます。
 
  * LeetCode - Visual Studio Marketplace@<fn>{vsc_plugin}
 
@@ -129,7 +129,7 @@ LeetCodeプラグインが生成するファイルはデフォルト設定だと
 ==== TDDでLeetCodeの問題を解く
 LeetCode Pluginで解答用コードを自動生成しても、補完などが効かなかったりします。
 これは解答用コードが@<tt>{Go}のコードとして正しくないため、Language Serverが動かないためです。
-VS Codeの@<tt>{Go}プラグインのサポートを借りながらコーディングするには、解答用コードに@<tt>{package}名を追加する必要があります。
+VSCodeの@<tt>{Go}プラグインのサポートを借りながらコーディングするには、解答用コードに@<tt>{package}名を追加する必要があります。
 これによって、課題が提出できなくなるようなことはありません。
 @<tt>{package}名を追加することで、テストコードの自動生成も実現できます。
 解答用コードにファイル先頭に@<tt>{package main}と追記したあと、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Go: Generate Unit Tests For File}を実行すればテストコードファイルが生成されます。
@@ -227,7 +227,7 @@ $ rustc -V
 rustc 1.48.0-nightly (5099914a1 2020-09-08)
 //}
 
-用意されているサブコマンドは次のとおりです。VS Codeで利用できる操作はカバーされているはずです。
+用意されているサブコマンドは次のとおりです。VSCodeで利用できる操作はカバーされているはずです。
 
 //cmd{
 $ leetcode -h
@@ -292,7 +292,7 @@ func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
 
 ファイルを開いたら冒頭に@<tt>{package main}を追記しましょう。
 
-VS Codeで紹介したようにテストコードを自動生成したい場合は@<tt>{gotests}コマンドを使います@<fn>{gotests}。
+VSCodeで紹介したようにテストコードを自動生成したい場合は@<tt>{gotests}コマンドを使います@<fn>{gotests}。
 
  * @<href>{https://github.com/cweill/gotests}
 
