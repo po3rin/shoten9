@@ -2,7 +2,8 @@
 
 @<tt>{@budougumi0617}@<fn>{bd617_twitter}です。
 本章ではLeetCodeという競技プログラミングコンテストサービスを紹介します。
-LeetCodeを使うとローカルで好みのエディタ・IDEを使って簡単にアルゴリズムとデータ構造を学習することができます。
+LeetCodeはアルゴリズムとデータ構造を学習することができます。
+そして本章ではローカルでテスト駆動開発（TDD）を用いながらLeetCodeに挑戦する方法をまとめます。
 私自身がコンテストに参加する利用方法をとっていないため、本章ではコンテストの紹介はしません。
 なお、本章内のディレクトリ構成やショートカット操作はすべてmacOS上を前提とします。
 
@@ -66,7 +67,7 @@ func reverseList(head *ListNode) *ListNode {
 }
 //}
 
-引数として先頭のリストへのポインタが渡され、処理が終わったら解答としてやはりリストの先頭のポインタを返すだけで解答ができます。リストのデータ構造も既定のものがあるので、アルゴリズムだけに集中して解くことができます。また、選択した言語の通常の関数定義と変わらないので、@<strong>{テストコードが書きやすい}のもメリットです。
+引数として先頭のリストへのポインタが渡され、処理が終わったら解答としてやはりリストの先頭のポインタを返すだけで解答ができます。リストのデータ構造も既定のものがあるので、アルゴリズムだけに集中して解くことができます。また、選択した言語の通常の関数定義と変わらないので、@<strong>{テストコードが書きやすく、TDDで解きやすい}のもメリットです。
 
 ==== 自分の好きなプログラミング言語で挑戦することができる
 予め関数定義が用意されるので、問題に集中しやすいLeetCodeですが、対応言語も豊富です。
@@ -130,7 +131,7 @@ VSCode以外のエディタ、IDEを利用する場合はCLIを使ったほう�
  * @<href>{https://docs.rs/leetcode-cli/0.2.25/leetcode_cli/}
  * @<href>{https://github.com/clearloop/leetcode-cli}
 
-インストール手順は次のとおりです。
+インストール手順は次のとおりです。インストール中のコンパイルで失敗する場合、Rustのリリースチャネルを@<tt>{nightly}に切り替える必要がある可能性があります。
 
 
 //cmd{
@@ -143,6 +144,8 @@ info: override toolchain for '/Users/yoichiroshimizu' set to 'nightly-x86_64-app
 $ rustc -V
 rustc 1.48.0-nightly (5099914a1 2020-09-08)
 //}
+
+用意されているサブコマンドは次のとおりです。VS Codeで利用できる操作はカバーされているはずです。
 
 //cmd{
 $ leetcode -h
@@ -166,8 +169,46 @@ SUBCOMMANDS:
     stat    Show simple chart about submissions [aliases: s]
     test    Test question by id [aliases: t]
     help    Prints this message or the help of the given subcommand(s)
-
 //}
+
+@<tt>{leetcode}コマンドはTOMLファイルで設定を管理しています。
+認証情報、言語設定とコードの保存ディレクトリを設定しておく必要があります。
+認証情報の取得方法はGitHub上のREADME@<fn>{cli_cookies} で確認することができます。
+デフォルト言語設定を@<tt>{Go}、エディタをVimに設定すると@<list>{cli_setting}のようになります。
+
+//footnote[cli_cookies][@<href>{https://github.com/clearloop/leetcode-cli#cookies}]
+
+//list[cli_setting][TOMLファイルの設定抜粋]{
+[code]
+editor = 'vim'
+lang = 'golang'
+
+[cookies]
+csrf = "7..."
+session = "eyJ...."
+
+[storage]
+code = '/Users/budougumi0617/go/src/github.com/budougumi0617/leetcode'
+//}
+
+==== CLI利用時にテストコードを自動生成する
+CLIでは@<tt>{leetcode list}コマンドで解きたい問題を探し、@<tt>{leetcode edit $NUM}で課題提出用のコードを生成します。
+CLIで生成するコードでも、@<tt>{package}名が設定されていないコードファイルが生成されるのでそのままでは動きません。
+
+//list[cli_edit][自動生成されるコード]{
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
+
+}
+//}
+
+ファイルを開いたら冒頭に@<tt>{package main}を追記しましょう。
 
 VS Codeで紹介したようにテストコードを自動生成したい場合は@<tt>{gotests}コマンドを使います@<fn>{gotests}。
 
@@ -186,6 +227,8 @@ $ go get -u github.com/cweill/gotests/...
 //cmd{
 $ gotests -all ...
 //}
+
+これで任意のエディタ、IDEを使ってLeetCodeに挑戦する準備ができました。
 
 
 == どの問題をやればいいの？
