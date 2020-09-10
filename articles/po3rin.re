@@ -58,16 +58,16 @@ GoではSuffix Arrayが標準パッケージで提供されています(@<list>{
 
 //list[suffix][suffixarray パッケージ][go]{
 import (
-    suffixarray
-    // ...
+	"index/suffixarray"
+	// ...
 )
 
-func Example() {
+func main() {
 	t := "abracadabra"
 	sa := suffixarray.New([]byte(t))
 
 	// abが出現する位置を返す。
-	offsets := index.Lookup([]byte("ab"), -1)
+	offsets := sa.Lookup([]byte("ab"), -1)
 	fmt.Println(offsets) // [7, 0]
 }
 //}
@@ -121,7 +121,7 @@ BWTは文字列Tを構成する各文字を、それに続くSuffixをキーと�
 //list[bwt-build][BWT関数の実装][go]{
 func BWT(t string) string {
 
-	// Suffix Array ------------------
+	// Suffix Array ----------------
 	t += "$"
 	sa := make([]string, len(t))
 	for i := 0; i < len(t); i++ {
@@ -129,7 +129,7 @@ func BWT(t string) string {
 	}
 	sort.Strings(sa)
 
-	// Suffix Array を利用してBWTを構築 -------
+	// BWT文字列構築 -----------------
 	var result string
 	for _, v := range sa {
 		if len(v) < len(t) {
@@ -184,7 +184,7 @@ func main() {
 //}
 
 今回はSuffix Arrayを構築してBWTを構築しましたが、Suffix Arrayの構築を高速化することでBWTの構築を高速に行えます。
-興味のある方はSA-IS(Suffix Array - Induced Sorting)@<fn>{sais}を調べてみてください。
+興味のある方は@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}を調べてみてください。
 
 //footnote[sais][@<href>{https://www.researchgate.net/publication/224176324_Two_Efficient_Algorithms_for_Linear_Time_Suffix_Array_Construction}]
 
@@ -264,9 +264,6 @@ func BWTInverse(t string) string {
 		sum = sum + cur
 	}
 
-	for r, c := range C {
-		fmt.Printf("%+v : %+v\n", string(r), c)
-	}
 	// LF-mapping ----------
 
 	lf := make([]int, len(r))
@@ -294,10 +291,10 @@ func BWTInverse(t string) string {
 //list[bwt-example2][BWT関数での文字列変換の例][go]{
 func main() {
 	t := "abracadabra"
-	bwt := BWT(t) // 後ほど実装
+	bwt := BWT(t)
 	fmt.Println(bwt) // ard$rcaaaabb
 
-	bwtinv := BWTInverse(bwt) // 後ほど実装
+	bwtinv := BWTInverse(bwt)
 	fmt.Println(bwtinv) // abracadabra
 }
 //}
