@@ -49,8 +49,7 @@ func main() {
 === Suffix Array
 
 ここではSuffixを使ったデータ構造である@<b>{Suffix Array(接尾辞配列)}を紹介します。Suffix ArrayはBWTの構築にも利用されます。
-文字列Tの全てのSuffixを辞書式順序でソートし、そのindexを格納した配列です。例えば@<b>{abcab}のSuffixArrayを単純に構築するときはまずSuffixのリストを作り、
-それを辞書式順序でソートし、そのindexをとります(@<img>{suffixarray})。
+文字列Tの全てのSuffixを辞書式順序でソートした配列です(@<img>{suffixarray})。
 
 //image[suffixarray]["abracadarba"からSuffix Arrayを構築し、文字列パターンマッチ][scale=1]{
 //}
