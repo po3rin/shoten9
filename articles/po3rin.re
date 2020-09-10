@@ -91,10 +91,16 @@ func main() {
 == BWTをGoで実装する
 
 ではその仕組みをGoで実装しながら追っていきましょう。まずはBWT構築です。
-BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです(@<img>{suffixarray-build})。
+BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです(@<img>{suffixarray_build})。
 ただし、$の後続のSuffixは元の文字列そのものとします。
 
-//image[suffixarray-build]["abracadarba$"からBWTを構築][scale=1]{
+//image[suffixarray_build]["abracadarba$"からBWTを構築][scale=1]{
+//}
+
+これは文字列Tを一文字ずつシフトしていった文字列をソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
+ちなみにソートした後の最後の列をL列、最初の列をF列と呼び、F列の文字列をTfとします。Tfに関してはBWTの復元で利用します。
+
+//image[shift]["abracadarba$"からBWTを構築(シフト)][scale=1]{
 //}
 
 しかし、なぜこれで同じ文字が出現しやすくなるのでしょうか。各文字をそれに続くSuffixでソートするということは、
@@ -177,34 +183,46 @@ func main() {
 続いてBWTの復元です。復元に必要なのはBWT文字列だけです。これがBWTが強力な所以です。
 この節ではまず逆変換に必要な LF-mapping の概念について紹介します。
 
-=== LF-mapping
+=== LF-mappingによるBWT復元
 
-まず、辞書順に並んだ各接尾辞の先頭文字をjoinしたものをTfとすると,@<code>{"abracadabra$"}に対応するTfは@<code>{"$aaaaabbcdrr"}です(@<img>{lf})。
+LF-mappingを理解するために、@<img>{shift}をもう一度確認しましょう。
+まず、辞書順に並んだ各接尾辞の先頭文字をjoinした文字列を@<m>{Tf}とするとこれは@<img>{shift}におけるF列に相当します。
+今回@<code>{"abracadabra$"}から得られる@<m>{Tf}は@<code>{"$aaaaabbcdrr"}です。@<code>{Tf}は@<m>{Tb}から簡単に求めれます。
 
-//image[lf]["abracadarba$"のTf][scale=1]{
+BWT文字列を@<m>{Tb}とすると、@<img>{shift}を見ていただくとわかる通り、
+同じ行の文字、つまり@<code>{Tf[i]}と@<code>{Tb[i]}は常に隣り合って出現します。
+これは1文字ずつシフトしているので当然です。そのため、$からL列 -> F列と1文字ずつ辿っていけば元の文字列が復元できます(@<img>{inv})。
+
+//image[inv][TfとTbから文字列を復元][scale=1]{
 //}
 
-Tfの重要な性質として1つの文字に注目した場合、Tfに出現する順番とBWT文字列(Tbとする)に出現する順番は同じになります。
-LF-mappingはTbのある文字がTfのどの文字に紐づくかをmappingするものです(@<img>{lfmapping})。
+@<img>{inv}の例では全ての文字が一回しか出現しなかったのでL列からF列の移動がスムーズでした。
+しかし、同じ文字が複数出現する場合はどちらの文字に対応しているのか一見分かりません(@<img>{inv_which})。
+
+//image[inv_which][同じ文字が複数ある場合どっちに対応するのか一見分からない][scale=1]{
+//}
+
+しかし、@<m>{Tf}の重要な性質のおかげで、どちらの文字に対応するのかを計算できます。@<m>{Tf}では
+@<b>{「1つの文字に注目した場合、Tf中にその文字が出現する順番とTbに出現する順番は同じになる」}という性質を持っています。
+@<m>{Tb}のある文字が@<m>{Tf}のどの文字に紐づくかをmappingするものをLF-mappingと呼びます(@<img>{lfmapping})。
 
 //image[lfmapping][TfとBWTの文字対応][scale=1]{
 //}
 
-BWT文字列をTbとすると、LF-mappingを行うためには、@<img>{lfmapping-eq}のように計算することでmappingできます。
+LF-mappingを行うためには、@<img>{lfmapping_eq}のように計算することでmappingできます。
 配列@<m>{C[c]}はTb内で@<m>{c}より小さい文字の数です。@<m>{rank}は@<m>{Tb[:i]}の中の@<m>{c}の数を返します。
 この二つの項でLF-mappingが可能です。
 
-//image[lfmapping-eq][LF-mapping][scale=1]{
+//image[lfmapping_eq][LF-mapping][scale=1]{
 //}
 
-例えばTbの二つ目の@<code>{b}はindexが@<code>{11}なので@<m>{LF(11)}を計算し、Tfに対応する文字の位置を特定できます(@<img>{lfmapping-ex})。
+例えばTbの二つ目の@<code>{b}はindexが@<code>{11}なので@<m>{LF(11)}を計算し、Tfに対応する文字の位置を特定できます(@<img>{lfmapping_ex})。
 
-//image[lfmapping-ex][LF-mappingの使用例][scale=1]{
+//image[lfmapping_ex][LF-mappingの使用例][scale=1]{
 //}
 
-=== LF-mappingを使ったBWT復元
-
-LF-mappingを使ってBWTから元の文字列を復元できます。
+これで同じ文字が複数回出現しても@<m>{Tf}と@<m>{Tb}の文字の対応がわかるようになりました。
+ここまでの知識でLF-mappingを使ってBWTから元の文字列を復元できます。
 
 === BWT復元のGo実装
 
@@ -256,4 +274,7 @@ func BWTInverse(t string) string {
 }
 //}
 
-== BWTを使った圧縮全文索引
+== まとめ
+
+今回はGoでBurrows-Wheeler変換について紹介しました。
+Burrows-Wheeler変換は色んな分野に応用され、奥が深いアルゴリズムなので、是非みなさんも調べてみて下さい。
