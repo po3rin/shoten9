@@ -22,10 +22,10 @@ bookname: golangtokyo-shoten9
 language: ja
 
 # 書名
-booktitle: Gopherの休日 2020夏
+booktitle: {name: "Gopherの休日 2020夏", file-as: "Gopherの休日 2020夏"}
 
 # 著者名。「, 」で区切って複数指定できる
-aut: ["golang.tokyo有志一同"]
+aut: [{ name: "golang.tokyo有志一同", file-as: "golang.tokyo有志一同" }]
 
 # 以下はオプション
 # 以下はオプション(autと同じように配列書式で複数指定可能)。
