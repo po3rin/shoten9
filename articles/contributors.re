@@ -3,6 +3,6 @@
 ==== 第1章 ひつじ / @mhidaka
 ひつじだよ〜
 
-== @<chap>{budougumi0617} LeetCodeでGoを使ってデータ構造とアルゴリズムを学ぶ / @<tt>{@budougumi0617}
+== @<chap>{budougumi0617} LeetCodeでアルゴリズムとデータ構造エクササイズ / @<tt>{@budougumi0617}
 いい加減英語をちゃんとやらないといけないなと本をいろいろ買ってみました。
 英文ドキュメントやrscのYouTubeを原文のままちゃんと理解できるようになりたい！

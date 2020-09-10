@@ -39,7 +39,7 @@ LeetCodeはオンライン競技プログラミングコンテストが行われ
  * 日本語未サポート
  * コンテストに参加する場合は時差がある
  
-サービスとしては英語オンリー@<fn>{lc_cn}ですが、コードをみたりアルゴリズムをキーワードとして検索すれば英語が苦手な私でも十分理解できています。
+サービスとしては英語オンリー@<fn>{lc_cn}ですが、コードをみたりアルゴリズムをキーワードとして検索すれば英語が苦手な私でも十分理解できるレベルです。
 
 次節よりメリットをもう少し詳しく説明します。
 
@@ -50,7 +50,7 @@ LeetCodeはオンライン競技プログラミングコンテストが行われ
  例えば他の競技プログラミングコンテストのWebサービスでは標準入力がインプットとして与えられることが多いです。そのため、@<strong>{文字列をパースしてデータを組み立てる実装が必要}になります。
  同様に、計算結果も標準出力で提出するサービスが多くアルゴリズムではなく、@<strong>{解答をフォーマットに沿った文字列へ加工する実装が必要}になります。
 @<strong>{LeetCodeではそのような作業は必要ありません}。LeetCodeの問題は予め関数定義が用意されるので、@<strong>{関数の引数を使って問題を解き、戻り値として解答を返すだけで解けます}。
-例えば、次の関数定義は連結リストの問題@<fn>{q_rll}のために、事前に定義された関数です。
+例えば、次の関数定義は連結リストの問題@<fn>{q_rll}を解くときに与えられる関数定義です。
 
 //footnote[q_rll][@<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/93/linked-list/560/}]
 
@@ -72,16 +72,17 @@ func reverseList(head *ListNode) *ListNode {
 ==== 自分の好きなプログラミング言語で挑戦することができる
 予め関数定義が用意されるので、問題に集中しやすいLeetCodeですが、対応言語も豊富です。
 
-* @<href>{https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages-}
+ * @<href>{https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages-}
 
 2020/09/10現在、LeetCodeは18言語をサポートしています。
 @<tt>{C}、@<tt>{C++}、@<tt>{Java}、@<tt>{Python}、@<tt>{Scala}などの主要な言語はもちろん、@<tt>{Rust}や@<tt>{Kotlin}と言った比較的新しい言語でも挑戦することができます。
 @<tt>{Go}は1.13を使って解くことができます。
 
-=== わからなくても解答や問題別掲示板で他の人の解答内容を見て勉強できる
+==== わからなくても解答や問題別掲示板で他の人の解答内容を見て勉強できる
+問題によっては何をすればわからないときもあります。
+そのようなときでもLeetCodeは解答を確認したり、問題別の掲示板を見ることで他の参加者の意見を確認することができます。
 
-
-* @<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/93/linked-list/560/discuss}
+ * @<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/93/linked-list/560/discuss}
 
 
 ==== 3rdパーティのVSCodeプラグインやCLIツールなどが存在し、ローカルで解きやすい
@@ -89,9 +90,7 @@ LeetCodeも他の競技プログラミングコンテストサービスと同様
 しかし、入力補完を使ったり、テストコードを書いたり@<fn>{leetcode_test}したいときもあります。
 また、@<tt>{Git}を利用して解答を管理しておきたいというニーズもあると思います。
 LeetCodeにはローカルで解答の雛形の取得、提出などを基本操作を行うOSSが複数存在します。
-今回は私が利用したことのあるVSCodeプラグインとRustのCLIツールを紹介したいと思います。
-
-
+今回は私が利用したことのあるVS Codeプラグインと@<tt>{Rust}のCLIツールを紹介したいと思います。
 
 //footnote[leetcode_test][既定のテストケースを数個実行する機能は提供されています]
 
@@ -142,17 +141,45 @@ VS Codeの@<tt>{Go}プラグインのサポートを借りながらコーディ�
  * Output: false
 //}
 
+//list[125_example_test][テストコードにしてTDD]{
+  tests := []struct {
+    name string
+    args args
+    want bool
+      {
+         name: "true",
+         args: args{s: "A man, a plan, a canal: Panama"},
+         want: true,
+      },
+      {
+         name: "false",
+         args: args{s: "race a car"},
+         want: false,
+      },
+  }
+
+  for _, tt := range tests {
+    tt := tt
+    t.Run(tt.name, func(t *testing.T) {
+      if got := isPalindrome(tt.args.s); got != tt.want {
+        t.Errorf("isPalindrome() = %v, want %v", got, tt.want)
+      }
+    })
+  }
+//}
+
+
 また、submitしたときに実装ミスでテストをPASSできないことがあります。
 
 //list[125_fail][submit時にテスト不合格だったときの結果出力]{
 Wrong Answer
-134/481 cases passed (N/A)
+458/481 cases passed (N/A)
 Testcase
-"A man, a plan, a canal: Panama"
+"0P"
 Answer
-false
-Expected Answer
 true
+Expected Answer
+false
 //}
 
 そのようなときもその通過できなかったテストケースをテストコードに追加して実装を再開できます。
@@ -163,21 +190,12 @@ true
     args args
     want bool
   }{
-    // Other test cases...
-    {
-      name: "true",
-      args: args{s: "A man, a plan, a canal: Panama"},
-      want: true,
-    },
-  }
-
-  for _, tt := range tests {
-    tt := tt
-    t.Run(tt.name, func(t *testing.T) {
-      if got := isPalindrome(tt.args.s); got != tt.want {
-        t.Errorf("isPalindrome() = %v, want %v", got, tt.want)
-      }
-    })
+      // oher cases...
+      {
+         name: "false2",
+         args: args{s: "0P"},
+         want: false,
+      },
   }
 //}
 
@@ -196,9 +214,11 @@ VSCode以外のエディタ、IDEを利用する場合はCLIを使ったほう�
 $ curl https://sh.rustup.rs -sSf | sh
 $ rustup override set nightly
 info: using existing install for 'nightly-x86_64-apple-darwin'
-info: override toolchain for '/Users/yoichiroshimizu' set to 'nightly-x86_64-apple-darwin'
+info: override toolchain for '/Users/yoichiroshimizu' set to \
+'nightly-x86_64-apple-darwin'
 
-  nightly-x86_64-apple-darwin unchanged - rustc 1.48.0-nightly (5099914a1 2020-09-08)
+  nightly-x86_64-apple-darwin unchanged - \
+rustc 1.48.0-nightly (5099914a1 2020-09-08)
 $ rustc -V
 rustc 1.48.0-nightly (5099914a1 2020-09-08)
 //}
@@ -302,7 +322,7 @@ LeetCodeにはすでに1400問以上の問題が存在します。
 
 == 終わりに
 本章ではLeetCodeの概要と、LeetCodeを使った学習をローカルで行なう方法を紹介しました。
-本当はコマンド1回でテストコードを一緒に生成してすぐテスト駆動開発でLeetCodeを解けるCLIツールをGoで作ろうとしたのですが、本書には間に合いませんでした。
+本当はコマンド1回で提出用コードとテストコードを一緒に生成してすぐTDDでLeetCodeを解けるCLIツールを@<tt>{Go}で作ろうとしたのですが、本書には間に合いませんでした。
 近いうちに公開してTwitter@<fn>{bd617_twitter2}かブログ@<fn>{bd617_blog}で告知するつもりなので、興味があったらチェックお願いします。
 
 //footnote[bd617_twitter2][@<href>{https://twitter.com/budougumi0617}]
