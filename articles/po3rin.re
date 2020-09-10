@@ -16,11 +16,11 @@ BWTはもともと、データ圧縮などの為に開発されたアルゴリ�
 
 == BWTの為の事前知識
 
-ここからはBWTを理解するための文字列界隈の事前知識をGoの実装と共に確認しましょう。
+まずはBWTの仕組みを理解するために、文字列に関する事前知識をGoの実装と共に復習しましょう。
 
 === 辞書式順序
 
-辞書式順序とは文字列の大小の順序の決め方です。文字列T,Uを先頭から1文字ずつ比較していき、初めて異なる文字が出てきた時に、その大小関係で順序が決まります。
+@<b>{辞書式順序}とは文字列の大小の順序の決め方です。文字列T,Uを先頭から1文字ずつ比較していき、初めて異なる文字が出てきた時に、その大小関係で順序が決まります。
 Goの文字列比較では辞書式順序が採用されています(@<list>{string-order})。
 
 //list[string-order][Goの文字列比較は辞書式順序で大小が決まる][go]{
@@ -33,8 +33,8 @@ func main() {
 
 === Suffix(接尾辞)
 
-文字列@<code>{"T"}の任意の@<code>{"i"}番目から最後までの部分文字列を@<b>{Suffix(接尾辞)}と呼びます。
-GoにはSuffixとして部分文字列が存在するかをチェックするメソッド@<code>{"func HasSuffix(s, suffix string) bool"}があります(@<list>{hassuffix})。
+文字列@<code>{T}の任意の@<code>{i}番目から最後までの部分文字列を@<b>{Suffix(接尾辞)}と呼びます。
+GoにはSuffixとして部分文字列が存在するかをチェックする関数である@<code>{HasSuffix}があります(@<list>{hassuffix})。
 
 //list[hassuffix][GoにはSuffixに関する関数がある][go]{
 func main() {
@@ -44,9 +44,11 @@ func main() {
 }
 //}
 
+この他にもSuffixをトリムする@<code>{TrimSuffix}などもあります。
+
 === Suffix Array
 
-Suffixを使ったデータ構造である@<b>{Suffix Array(接尾辞配列)}を紹介します。Suffix Arrayはのちに紹介するBWTの構築にも利用されます。
+ここではSuffixを使ったデータ構造である@<b>{Suffix Array(接尾辞配列)}を紹介します。Suffix ArrayはBWTの構築にも利用されます。
 文字列Tの全てのSuffixを辞書式順序でソートし、そのindexを格納した配列です。例えば@<b>{abcab}のSuffixArrayを単純に構築するときはまずSuffixのリストを作り、
 それを辞書式順序でソートし、そのindexをとります(@<img>{suffixarray})。
 
@@ -56,7 +58,7 @@ Suffixを使ったデータ構造である@<b>{Suffix Array(接尾辞配列)}を
 @<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。Suffixをソートしているので二分探索で探索が可能です。
 GoではSuffix Arrayが標準パッケージで提供されています(@<list>{suffix})。
 
-//list[suffix][suffixarray パッケージ][go]{
+//list[suffix][index/suffixarray パッケージ][go]{
 import (
 	"index/suffixarray"
 	// ...
@@ -72,8 +74,10 @@ func main() {
 }
 //}
 
-GoのsuffixarrayパッケージではSuffix Arrayの構築を@<b>{SAIS}というアルゴリズムを利用しています。
-SAISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられます。残念ながらGoのSuffix Arrayはパターンマッチングに用途が特化している為、BWT構築には使えません。
+GoのsuffixarrayパッケージではSuffix Arrayの構築を@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}というアルゴリズムを利用しています。
+SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられます。
+
+//footnote[sais][@<href>{https://www.researchgate.net/publication/224176324_Two_Efficient_Algorithms_for_Linear_Time_Suffix_Array_Construction}]
 
 == Burrows-Wheeler変換
 
@@ -106,8 +110,8 @@ BWTは文字列Tを構成する各文字を、それに続くSuffixをキーと�
 //image[suffixarray_build]["abracadarba$"からBWTを構築][scale=1]{
 //}
 
-これは文字列Tを一文字ずつシフトしていった文字列をソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
-ちなみにソートした後の最後の列をL列、最初の列をF列と呼び、F列の文字列をTfとします。Tfに関してはBWTの復元で利用します。
+これは文字列Tを一文字ずつシフトしていき、それらをソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
+ちなみにソートした後の最後の列を@<b>{L列}、最初の列を@<b>{F列}と呼び、F列の文字列を@@<m>{Tf}とします。@<m>{Tf}に関してはBWTの復元で利用します。
 
 //image[shift]["abracadarba$"からBWTを構築(シフト)][scale=1]{
 //}
@@ -184,13 +188,11 @@ func main() {
 //}
 
 今回はSuffix Arrayを構築してBWTを構築しましたが、Suffix Arrayの構築を高速化することでBWTの構築を高速に行えます。
-興味のある方は@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}を調べてみてください。
-
-//footnote[sais][@<href>{https://www.researchgate.net/publication/224176324_Two_Efficient_Algorithms_for_Linear_Time_Suffix_Array_Construction}]
+興味のある方は前に紹介した@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}を調べてみてください。
 
 == BWT文字列の復元
 
-続いてBWTの復元です。復元に必要なのはBWT文字列だけです。これがBWTが強力な所以です。
+続いてBWTの復元です。復元に必要なのはBWT文字列だけです。これがBWTが強力な理由です。
 この節ではまず逆変換に必要な@<b>{LF-mapping}の概念について紹介します。
 
 === LF-mappingによるBWT復元
