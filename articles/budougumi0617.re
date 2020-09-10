@@ -113,7 +113,7 @@ VS Codeを使ってLeetcodeの問題を解く場合、VS Codeプラグインを�
 
 //footnote[vsc_plugin][@<href>{https://marketplace.visualstudio.com/items?itemName=LeetCode.vscode-leetcode}]
 
-プラグインインストール後、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Open User Settings}を選択肢ます。
+プラグインインストール後、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Open User Settings}を選択します。
 その後、@<kw>{設定の検索}で@<tt>{leetcode}を検索します。
 @<kw>{LeetCode: Default Languages}で@<tt>{golang}を選択しておきます。
 LeetCodeプラグインが生成するファイルはデフォルト設定だとホームディレクトリ以下の隠しフォルダに保存されていきます。
@@ -122,6 +122,64 @@ LeetCodeプラグインが生成するファイルはデフォルト設定だと
 もし、Git管理したディレクトリで解答コードを管理したい場合は、@<kw>{LeetCode: Workspace Folder}のディレクトリ設定を変更しておく必要があります@<fn>{vscode_dir}。
 
 //footnote[vscode_dir][例: @<tt>{/Users/budougumi0617/go/src/github.com/budougumi0617/leetcode}]
+
+==== TDDでLeetCodeの問題を解く
+LeetCode Pluginで解答用コードを自動生成しても、補完などが効かなかったりします。
+これは解答用コードが@<tt>{Go}のコードとして正しくないため、Language Serverが動かないためです。
+VS Codeの@<tt>{Go}プラグインのサポートを借りながらコーディングするには、解答用コードに@<tt>{package}名を追加する必要があります。
+これによって、課題が提出できなくなるようなことはありません。
+@<tt>{package}名を追加することで、テストコードの自動生成も実現できます。
+解答用コードにファイル先頭に@<tt>{package main}と追記したあと、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Go: Generate Unit Tests For File}を実行すればテストコードファイルが生成されます。
+あとは問題文に記載された@<list>{125_example}のような例題をテストケースに実装していけばTDDを開始できます。
+
+//list[125_example][問題文に書かれたExample]{
+ * Example 1:
+ * Input: "A man, a plan, a canal: Panama"
+ * Output: true
+ *
+ * Example 2:
+ * Input: "race a car"
+ * Output: false
+//}
+
+また、submitしたときに実装ミスでテストをPASSできないことがあります。
+
+//list[125_fail][submit時にテスト不合格だったときの結果出力]{
+Wrong Answer
+134/481 cases passed (N/A)
+Testcase
+"A man, a plan, a canal: Panama"
+Answer
+false
+Expected Answer
+true
+//}
+
+そのようなときもその通過できなかったテストケースをテストコードに追加して実装を再開できます。
+
+//list[125_add_case][テストケースを追加して再開]{
+  tests := []struct {
+    name string
+    args args
+    want bool
+  }{
+    // Other test cases...
+    {
+      name: "true",
+      args: args{s: "A man, a plan, a canal: Panama"},
+      want: true,
+    },
+  }
+
+  for _, tt := range tests {
+    tt := tt
+    t.Run(tt.name, func(t *testing.T) {
+      if got := isPalindrome(tt.args.s); got != tt.want {
+        t.Errorf("isPalindrome() = %v, want %v", got, tt.want)
+      }
+    })
+  }
+//}
 
 
 === CLIツールを使って挑戦する
