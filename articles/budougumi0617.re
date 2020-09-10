@@ -74,7 +74,7 @@ func reverseList(head *ListNode) *ListNode {
 
  * What are the environments for the programming languages?@<fn>{support_lang}
 
-//footnote[support_lang][@<href>{https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages-}]
+//footnote[support_lang][@<href>{https://bit.ly/2R9Zrok}]
 
 2020/09/10現在、LeetCodeは18言語をサポートしています。
 @<tt>{C}、@<tt>{C++}、@<tt>{Java}、@<tt>{Python}、@<tt>{Scala}などの主要な言語はもちろん、@<tt>{Rust}や@<tt>{Kotlin}と言った比較的新しい言語でも挑戦することができます。
