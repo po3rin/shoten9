@@ -3,6 +3,10 @@
 本章ではiCalendar形式をパースし、Goのオブジェクトに変換するライブラリの作成をします。
 その過程でiCalendar形式の仕様に対しての理解を深めていきます。
 
+本章で解説するパーサの実装はGitHub@<fn>{github_repo_link}で公開しています。
+
+//footnote[github_repo_link][@<href>{https://github.com/knsh14/ical}]
+
 == 概要
 iCalendar形式はRFC 5545@<fn>{rfc_5545_link}で詳細な仕様が定義されています。
 
@@ -191,6 +195,7 @@ type Parameter struct {
  3. 字句解析器から字句を取り出しコンテンツラインに変換する
 
 ==== 複数行をひとつの文字列オブジェクトとして分割する
+
 コンテンツラインは複数行でひとつのコンテンツラインを形成する場合があります。
 そのため、まずすべての行をチェックし、先頭の文字を確認します。
 もし、スペースもしくはタブ文字なら複数行のコンテンツラインの一部と見なします。
@@ -874,23 +879,140 @@ func NewInteger(v string) (Integer, error) {
 
 #@# ==== パラメータ
 #@# パラメータの種類はここにある
-#@# それぞれのバリデーションがあるのでそれに沿ってコンテンツラインから取り出したパラメータを当てはめていく
+#@# それぞれのバリデーションがあるのでそれにそってコンテンツラインから取り出したパラメータを当てはめていく
 #@# parameter.Container という型を定義して、まとめて扱うことができるようにする。
 #@# プロパティによっては特定のパラメータを取り出す必要があるので、mapでパラメータ名から引けるようにする。
 #@# mapの要素はスライスにする。
-#@# 
-#@# == 結果のバリデーション
-#@# ==== プロパティのバリデーション
-#@# プロパティのバリデーションは各プロパティの仕様に沿って実装する。
-#@# プロパティの型を定義して@<code>{Setプロパティ}メソッドで値をセットするときにバリデーションする。
-#@# あるプロパティは値しか見ない場合もあるし、別のやつはparameterもチェックする場合がある。
-#@# このパラメータは指定する場合はひとつしかだめとか
-#@# 
-#@# ==== コンポーネントのバリデーション
-#@# 最後にコンポーネントのバリデーションする。
-#@# コンポーネントのプロパティは3つの制約がある
-#@# 
-#@#  1. 必須コンポーネント
-#@#  2. 必須ではないがひとつしか設定できないもの
-#@#  3. 0個以上設定できるもの
-#@# 
+
+== ファイルをパースし、オブジェクトを返す
+これまで作成した機能を統合し、ライブラリとして外部へパースする機能を提供します。
+次の処理を実装することで全体を通して動作させることができます。
+
+ 1. @<code>{io.Reader}から文字列を読み込む
+ 2. 文字列を並列にコンテンツラインへ変換する
+
+=== io.Readerから文字列を読み込む
+iCalendar形式をパースするためには対象のファイルを読み込む必要があります。
+@<list>{implementation_receive_ioreader}に実装を示します。
+
+//list[implementation_receive_ioreader][]{
+func Parse(r io.Reader) (*ical.Calender, error) {
+	return parseFromScanner(bufio.NewScanner(r))
+}
+
+func scanLines(scanner *bufio.Scanner) ([]string, error) {
+	var res []string
+	for scanner.Scan() {
+		l := scanner.Text()
+		switch {
+		case strings.HasPrefix(l, " "):
+			res[len(res)-1] += "\n" + strings.TrimPrefix(l, " ")
+		case strings.HasPrefix(l, "\t"):
+			res[len(res)-1] += "\n" + strings.TrimPrefix(l, "\t")
+			continue
+		default:
+			res = append(res, l)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
+	lines, err := scanLines(scanner)
+	if err != nil {
+		return nil, err
+	}
+    // ... 文字列からコンテンツラインへ変換、構文解析による変換処理をおこなうが省略しています
+}
+//}
+
+ファイルパスを指定して読み込む方法も考えられますが、@<tt>{io}パッケージの@<code>{io.Reader}を渡すように設計しました。
+@<code>{io.Reader}を受け取るようにすると、ファイルが存在するかのチェックは利用者のコードの責任になります。
+すると、パーサではより内容を変換する処理に集中できます。
+
+さらに、@<tt>{net/http}パッケージを利用してインターネット経由で取得したiCalendar形式のデータをそのまま変換に渡すことができます。
+@<list>{example_usage}に示すコードが実行できます。
+
+//list[example_usage][]{
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/knsh14/ical"
+	"github.com/knsh14/ical/parser"
+)
+
+func main() {
+	res, err := http.Get("https://www.google.com/calendar/ical/japanese__ja%40holiday.calendar.google.com/public/basic.ics")
+	if err != nil {
+		log.Fatal(err)
+	}
+	body := res.Body
+	defer body.Close()
+	cal, err := parser.Parse(body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, c := range cal.Components {
+		if event, ok := c.(*ical.Event); ok {
+			fmt.Println(event.Summary.Value)
+		}
+	}
+}
+//}
+
+=== 文字列を並列にコンテンツラインへ変換する
+文字列から字句解析器を生成し、コンテンツラインに変換する処理はそれぞれの行で独立した操作です。
+そのため、一度文字列のスライスを生成した後は並列に処理することで、パフォーマンスを向上させることができます。
+並列に処理する実装を@<list>{implementation_process_converting}に示します。
+
+//list[implementation_process_converting][]{
+func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
+	lines, err := scanLines(scanner)
+	if err != nil {
+		return nil, err
+	}
+	var eg errgroup.Group
+	contentlines := make([]*contentline.ContentLine, len(lines))
+	for i := range lines {
+		i := i
+		eg.Go(func() error {
+			l := lexer.New(lines[i])
+			cl, err := contentline.ConvertContentLine(l)
+			if err != nil {
+				return fmt.Errorf("convert content line in line %d: %w", i, err)
+			}
+			contentlines[i] = cl
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+	p := NewParser(contentlines)
+	return p.parse()
+}
+//}
+
+文字列のスライスと同じ長さのコンテンツラインのスライスを準備します。
+並列に実行する処理に結果を代入するためのインデックスを渡します。
+こうすると、コンテンツラインのスライスの順番がばらばらになりません。
+
+@<tt>{errgroup}パッケージ@<fn>{errgroup_doc_link}を使うことでエラーを返す処理を並列に実行できます。
+@<tt>{errgroup.Group.Wait}メソッドですべての処理が終わるまで待ちます。
+どれかの処理がエラーを返すと@<code>{Wait}メソッドがエラーを返します。
+もしコンテンツラインへ変換する処理のどこかでエラーが発生しても、最後にチェックできます。
+
+//footnote[errgroup_doc_link][@<href>{https://pkg.go.dev/golang.org/x/sync/errgroup}]
+
+== 最後に
+言語処理系の実装のアイデアを利用して、iCalendar形式のファイルをパースし、Goのオブジェクトに変換するライブラリを実装しました。
+言語処理系を実装するのは心理的ハードルが高いですが、まずはこのようなファイルをパースするだけのライブラリを実装することで字句解析、構文解析への理解を深めることができます。
+
+iCalendarの仕様はあいまいに作られている部分が多く実装に苦労しましたが、便利なライブラリなのでカレンダーの処理に興味があればぜひ使ってみてください。
