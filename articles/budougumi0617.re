@@ -4,6 +4,7 @@
 本章ではLeetCodeという競技プログラミングコンテストサービスを紹介します。
 LeetCodeを使うとローカルで好みのエディタ・IDEを使って簡単にアルゴリズムとデータ構造を学習することができます。
 私自身がコンテストに参加する利用方法をとっていないため、本章ではコンテストの紹介はしません。
+なお、本章内のディレクトリ構成やショートカット操作はすべてmacOS上を前提とします。
 
 //footnote[bd617_twitter][@<href>{https://twitter.com/budougumi0617}]
 
@@ -104,17 +105,33 @@ GitHubやgmailを使うと簡単にアカウントを発行できます。
  * Git管理する場合は、予め@<tt>{git pull}（もしくは@<tt>{git init}）したディレクトリを用意する
  * （VS Codeを使って開発する場合）LeetCodeのアカウントをGitHub連携しておくとログインが簡単
 
-
-=== VS Codeを使って
+=== VS Codeを使ってLeetCodeに挑戦する
+VS Codeを使ってLeetcodeの問題を解く場合、VS Codeプラグインを利用することができます。
 
  * LeetCode - Visual Studio Marketplace@<fn>{vsc_plugin}
 
 //footnote[vsc_plugin][@<href>{https://marketplace.visualstudio.com/items?itemName=LeetCode.vscode-leetcode}]
 
+プラグインインストール後、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Open User Settings}を選択肢ます。
+その後、@<kw>{設定の検索}で@<tt>{leetcode}を検索します。
+@<kw>{LeetCode: Default Languages}で@<tt>{golang}を選択しておきます。
+LeetCodeプラグインが生成するファイルはデフォルト設定だとホームディレクトリ以下の隠しフォルダに保存されていきます。
+
+
+もし、Git管理したディレクトリで解答コードを管理したい場合は、@<kw>{LeetCode: Workspace Folder}のディレクトリ設定を変更しておく必要があります@<fn>{vscode_dir}。
+
+//footnote[vscode_dir][例: @<tt>{/Users/budougumi0617/go/src/github.com/budougumi0617/leetcode}]
+
 
 === CLIツールを使って挑戦する
-https://docs.rs/leetcode-cli/0.2.25/leetcode_cli/
-https://github.com/clearloop/leetcode-cli
+VSCode以外のエディタ、IDEを利用する場合はCLIを使ったほうが便利でしょう。
+3rdパーディ製のRustで実装された@<tt>{leetcode}コマンドが存在します。
+
+ * @<href>{https://docs.rs/leetcode-cli/0.2.25/leetcode_cli/}
+ * @<href>{https://github.com/clearloop/leetcode-cli}
+
+インストール手順は次のとおりです。
+
 
 //cmd{
 $ curl https://sh.rustup.rs -sSf | sh
@@ -152,35 +169,41 @@ SUBCOMMANDS:
 
 //}
 
-//list[bear/bear.go][hoge]{
-package bear
+VS Codeで紹介したようにテストコードを自動生成したい場合は@<tt>{gotests}コマンドを使います@<fn>{gotests}。
 
-import "fmt"
+ * @<href>{https://github.com/cweill/gotests}
 
-type BearInterface interface {
-	Sleep()
-	Eat()
-}
+//footnote[gotests][VSCocdeも内部的には@<tt>{gotests}を使ってテストコードを生成しています]
 
-type Bear struct {
-	Name  string
-	Color string
-}
+インストール手順はGitHub上のREADMEのとおりです。
 
-func (b *Bear) Sleep() {
-	fmt.Println("眠る")
-}
+//cmd{
+$ go get -u github.com/cweill/gotests/...
+//}
 
-func (b *Bear) Eat() {
-	fmt.Println("食べる")
-}
+一番簡単な利用方法としてはLeetCodeに提出する課題定義があるディレクトリで次のように実行します。
+
+//cmd{
+$ gotests -all ...
 //}
 
 
 == どの問題をやればいいの？
-1400問以上存在します。
+LeetCodeにはすでに1400問以上の問題が存在します。
+どの問題を解くか迷う方は次のコレクションを参考にするといいでしょう。
+
  * Easy Collection | Top Interview Questions@<fn>{top_interview}
  * コーディング面接対策のために解きたいLeetCode 60問@<fn>{1kohei1}
 
 //footnote[top_interview][@<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/}]
 //footnote[1kohei1][@<href>{https://1kohei1.com/leetcode/}]
+
+
+== 終わりに
+本章ではLeetCodeの概要と、LeetCodeを使った学習をローカルで行なう方法を紹介しました。
+本当はコマンド1回でテストコードを一緒に生成してすぐテスト駆動開発でLeetCodeを解けるCLIツールをGoで作ろうとしたのですが、本書には間に合いませんでした。
+近いうちに公開してTwitter@<fn>{bd617_twitter2}かブログ@<fn>{bd617_blog}で告知するつもりなので、興味があったらチェックお願いします。
+
+//footnote[bd617_twitter2][@<href>{https://twitter.com/budougumi0617}]
+//footnote[bd617_blog][@<href>{https://budougumi0617.github.io/}]
+
