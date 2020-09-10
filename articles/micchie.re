@@ -132,7 +132,7 @@ UMLをテキストで書けるようになりました。
 == PlantUMLをGoで描く
 いよいよ、UMLをGoで書きはじめます。
 
-この章では、@<code>{jfeliu007/goplantuml}@<fn>{goplantuml}というツールを利用することで、GoのコードからPlantUMLのクラス図を生成する方法を紹介します。
+この節では、@<code>{jfeliu007/goplantuml}@<fn>{goplantuml}というツールを利用することで、GoのコードからPlantUMLのクラス図を生成する方法を紹介します。
 //footnote[goplantuml][@<href>{https://github.com/jfeliu007/goplantuml/}]
 
 === jfeliu007/goplantumlのインストール
