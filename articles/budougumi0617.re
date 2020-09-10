@@ -72,7 +72,9 @@ func reverseList(head *ListNode) *ListNode {
 ==== 自分の好きなプログラミング言語で挑戦することができる
 予め関数定義が用意されるので、問題に集中しやすいLeetCodeですが、対応言語も豊富です。
 
- * @<href>{https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages-}
+ * What are the environments for the programming languages?@<fn>{support_lang}
+
+//footnote[support_lang][@<href>{https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages-}]
 
 2020/09/10現在、LeetCodeは18言語をサポートしています。
 @<tt>{C}、@<tt>{C++}、@<tt>{Java}、@<tt>{Python}、@<tt>{Scala}などの主要な言語はもちろん、@<tt>{Rust}や@<tt>{Kotlin}と言った比較的新しい言語でも挑戦することができます。
@@ -82,7 +84,9 @@ func reverseList(head *ListNode) *ListNode {
 問題によっては何をすればわからないときもあります。
 そのようなときでもLeetCodeは解答を確認したり、問題別の掲示板を見ることで他の参加者の意見を確認することができます。
 
- * @<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/93/linked-list/560/discuss}
+ * Discussion for Reverse Linked List@<fn>{560_discuss}
+
+//footnote[560_discuss][@<href>{https://leetcode.com/explore/interview/card/top-interview-questions-easy/93/linked-list/560/discuss}]
 
 
 ==== 3rdパーティのVSCodeプラグインやCLIツールなどが存在し、ローカルで解きやすい
