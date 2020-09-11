@@ -881,7 +881,7 @@ func (v *Version) UpdateVersion(
 
 //footnote[rfc_type_definition_link][@<href>{https://tools.ietf.org/html/rfc5545#section-3.3}]
 
-@<tt>{Float}型や@<tt>{Text}型などいくつかの型はGoで定義されている組み込み型を使うことができます。
+@<tt>{Float}型や@<tt>{Text}型などいくつかの型はGoで定義されている組込みを使うことができます。
 @<tt>{Time}型や@<tt>{URI}型はGoの標準ライブラリで定義されている型を用いて代用できます。
 @<tt>{Duration}型や@<tt>{Reccurence Rule}型は標準ライブラリなどでは定義されていないため、独自に定義します。
 
@@ -901,7 +901,7 @@ func NewInteger(v string) (Integer, error) {
 //}
 
 
-@<tt>{Integer}型は、Goの組み込み型にある@<tt>{int64}型を利用したユーザー定義型にします。
+@<tt>{Integer}型は、Goの組込みにある@<tt>{int64}型を利用したユーザー定義型にします。
 @<tt>{int64}型をそのまま使わずに型を定義したのには理由があります。
 プロパティには複数種類の型を値として保持するものがあります。
 それらの型はGoの型から見ると共通でないものもあります。
