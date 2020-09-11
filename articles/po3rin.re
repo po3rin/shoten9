@@ -1,8 +1,9 @@
 = Go+Burrows-Wheeler変換で入門する文字列解析の世界
 
-こんにちは@pon@<fn>{po3rin}です。本章ではGoによる実装を通して、
-@<b>{Burrows-Wheeler変換(BWT)}@<fn>{bwt}という文字列変換アルゴリズムを紹介します。BWTはブロックソートとも呼ばれ、文字列の可逆変換のアルゴリズムです。
-BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、その後にその有用性が広まり、全文検索などでも利用されています。
+こんにちは、pon(@po3rin)@<fn>{po3rin}です。本章ではGoによる実装を通して、
+@<b>{Burrows-Wheeler変換(BWT)}@<fn>{bwt}という文字列変換アルゴリズムを紹介します。
+BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、後にその有用性が広まり、全文検索などでも利用されています。
+このアルゴリズムを理解することで、データ圧縮や、全文検索などを理解する為の足がかりになるでしょう。
 
 //footnote[po3rin][@<href>{https://twitter.com/po3rin}]
 //footnote[bwt][@<href>{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.121.6177}]
@@ -54,7 +55,7 @@ func main() {
 //image[suffixarray]["abracadarba"からSuffix Arrayを構築し、文字列パターンマッチ][scale=1]{
 //}
 
-@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。Suffixをソートしているので二分探索で探索が可能です。
+実装は紹介しませんが、@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。Suffixをソートしているので二分探索で探索が可能です。
 GoではSuffix Arrayが標準パッケージで提供されています(@<list>{suffix})。
 
 //list[suffix][index/suffixarray パッケージ][go]{
@@ -73,20 +74,19 @@ func main() {
 }
 //}
 
-GoのsuffixarrayパッケージではSuffix Arrayの構築を@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}というアルゴリズムを利用しています。
-SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられます。
+Goの@<code>{index/suffixarray}パッケージではSuffix Arrayの構築を@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}というアルゴリズムを利用しています。
+SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられかなり高速です。
 
 //footnote[sais][@<href>{https://www.researchgate.net/publication/224176324_Two_Efficient_Algorithms_for_Linear_Time_Suffix_Array_Construction}]
 
 == Burrows-Wheeler変換
 
 それではいよいよ本題です。@<b>{Burrows-Wheeler変換(BWT)}はブロックソートとも呼ばれ、文字列の可逆変換のアルゴリズムです。
-BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、その後にその有用性が広まり、全文検索などでも利用されています。
-
+BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、後にその有用性が広まり、全文検索などでも利用されています。
 実際にBWTはデータ圧縮プログラムである@<b>{bzip2}の内部のアルゴリズムとしても採用されており、文字列を圧縮しやすい順番に文字を可逆変換します。
 
-例えば@<code>{"abracadabra"}という文字列からBWTを構築する場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、他の文字より)を末尾に追加し、
-@<code>{"abracadabra$"}という形にした後、BWTすると@<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形になります。
+まずは、@<code>{"abracadabra"}という文字列からBWTを行う場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、他の文字より小さい文字)を末尾に追加し、
+@<code>{"abracadabra$"}という形にした後、BWTを行うと@<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形に変換できます。
 当然、BWTは可逆変換なので、@<code>{"ard$rcaaaabb"}から@<code>{"abracadabra$"}という元の文字列に戻せます(@<list>{bwt-example})。
 
 //list[bwt-example][BWT関数での文字列変換の例][go]{
@@ -102,14 +102,16 @@ func main() {
 
 === BWTをGoで実装する
 
-ではその仕組みをGoで実装しながら追っていきましょう。まずはBWT構築です。
-BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです(@<img>{suffixarray_build})。
-ただし、$の後続のSuffixは元の文字列そのものとします。
+ではその仕組みをGoで実装しながら追っていきましょう。
+BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです。ただし、$の後続のSuffixは元の文字列そのものとします。
+@<code>{"abracadabra"}の文字列を入力とした例では@<img>{suffixarray_build}のように操作をすることでBWT後の@<code>{"ard$rcaaaabb"}という文字列を取得できます。
+
 
 //image[suffixarray_build]["abracadarba$"からBWTを構築][scale=1]{
 //}
 
 これは文字列Tを一文字ずつシフトしていき、それらをソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
+こちらの方法の方がBWTの解説によく利用されルカもしれません。
 ちなみにソートした後の最後の列を@<b>{L列}、最初の列を@<b>{F列}と呼び、F列の文字列を@@<m>{Tf}とします。@<m>{Tf}に関してはBWTの復元で利用します。
 
 //image[shift]["abracadarba$"からBWTを構築(シフト)][scale=1]{
@@ -176,7 +178,6 @@ func main() {
 
 その為、code pointを単位として文字を扱うための仕組みである@<b>{rune}を単位としてアクセスすることで
 @<code>{GetChar}関数では1文字アクセスを実装しています。
-
 実装した@<code>{BWT}関数を実際に使うと正しくBWTできていることが分かります(@<list>{bwt-build-run})。
 
 //list[bwt-build-run][BWT関数の利用例][go]{
@@ -197,12 +198,13 @@ func main() {
 === LF-mappingによるBWT復元
 
 LF-mappingを理解するために、@<img>{shift}をもう一度確認しましょう。
-まず、辞書順に並んだ各接尾辞の先頭文字をjoinした文字列を@<m>{Tf}とするとこれは@<img>{shift}におけるF列に相当します。
-今回@<code>{"abracadabra$"}から得られる@<m>{Tf}は@<code>{"$aaaaabbcdrr"}です。@<code>{Tf}は@<m>{Tb}から簡単に求めれます。
+まず、辞書順に並んだ各接尾辞の先頭文字をjoinした文字列を@<m>{Tf}とすると、これは@<img>{shift}におけるF列に相当します。
+今回@<code>{"abracadabra$"}から得られる@<m>{Tf}は@<code>{"$aaaaabbcdrr"}です。
 
 BWT文字列を@<m>{Tb}とすると、@<img>{shift}を見ていただくとわかる通り、
 同じ行の文字、つまり@<code>{Tf[i]}と@<code>{Tb[i]}は常に隣り合って出現します。
-これは1文字ずつシフトしているので当然です。そのため、$からL列 -> F列と1文字ずつ辿っていけば元の文字列が復元できます(@<img>{inv})。
+これは1文字ずつシフトしているので当然です。そのため、$からL列 -> F列と1文字ずつ辿っていけば元の文字列が後ろから復元できます。
+@<img>{inv}は@<code>{"abdec$"}を入力としてBWTを行った後の@<m>{Tf}、@<m>{Tb}から復元を行う操作を表しています。
 
 //image[inv][TfとTbから文字列を復元][scale=1]{
 //}
@@ -213,21 +215,21 @@ BWT文字列を@<m>{Tb}とすると、@<img>{shift}を見ていただくとわ�
 //image[inv_which][同じ文字が複数ある場合どっちに対応するのか一見分からない][scale=1]{
 //}
 
-しかし、@<m>{Tf}の重要な性質のおかげで、どちらの文字に対応するのかを計算できます。@<m>{Tf}は
-@<b>{「1つの文字に注目した場合、Tf中にその文字が出現する順番とTbに出現する順番は同じになる」}という性質を持っています。
+しかし、@<m>{Tf}の重要な性質のおかげで、どちらの文字に対応するのかを計算できます。
+@<m>{Tf}は@<b>{「1つの文字に注目した場合、Tf中にその文字が出現する順番とTbに出現する順番は同じになる」}という性質を持っています。
 @<m>{Tb}のある文字が@<m>{Tf}のどの文字に紐づくかをmappingするものをLF-mappingと呼びます(@<img>{lfmapping})。
 
-//image[lfmapping][TfとBWTの文字対応][scale=1]{
+//image[lfmapping][1つの文字に注目した場合、Tf中にその文字が出現する順番とTbに出現する順番は同じになる][scale=1]{
 //}
 
 LF-mappingを行うためには、@<img>{lfmapping_eq}のように計算することでmappingできます。
 配列@<m>{C[c]}はTb内で@<m>{c}より小さい文字の数です。@<m>{rank}は@<m>{Tb[:i-1]}の中の@<m>{c}の数を返します。
 この二つの項でLF-mappingが可能です。
 
-//image[lfmapping_eq][LF-mapping][scale=0.7]{
+//image[lfmapping_eq][LF-mappingを行う式][scale=0.7]{
 //}
 
-例えばTbの二つ目の@<code>{b}はindexが@<code>{11}なので@<m>{LF(11)}を計算し、Tfに対応する文字の位置を特定できます(@<img>{lfmapping_ex})。
+例えば@<img>{lfmapping_ex}においてTbの二つ目の@<code>{b}はindexが@<code>{11}なので@<m>{LF(11)}を計算し、Tfに対応する文字の位置を特定できます。
 
 //image[lfmapping_ex][LF-mappingの使用例][scale=1]{
 //}
@@ -242,7 +244,6 @@ LF-mappingを行うためには、@<img>{lfmapping_eq}のように計算する�
 
 //list[bwt-inverse][BWT文字列の復元][go]{
 func BWTInverse(t string) string {
-	r := []rune(t)
 
 	// Cの構築 ------------
 	C := make(map[rune]int)
@@ -255,7 +256,7 @@ func BWTInverse(t string) string {
 		C[c] = v + 1
 	}
 
-	sig := Deduplicate(strings.Split(t, ""))
+	sig := deduplicate(strings.Split(t, "")) // 後で実装
 
 	var sum int
 	for _, c := range sig {
@@ -275,8 +276,9 @@ func BWTInverse(t string) string {
 
 	// inverse -------------
 
+	r := []rune(t)
 	p := strings.Index(t, "$")
-	result := make([]rune, len(r))
+	lf := make([]int, utf8.RuneCountInString(t))
 	for i := range t {
 		p = lf[p]
 		result[i] = r[p]
@@ -286,6 +288,31 @@ func BWTInverse(t string) string {
 	return string(result[:len(result)-1])
 }
 //}
+
+@<code>{utf8.RuneCountInString}は@<code>{string}型を受け取り@<code>{rune}の数を返します。純粋に文字数を取得したい場合に便利です。
+@<code>{deduplicate}関数は出現文字だけのスライスを取得する為の重複排除関数です(@<list>{deduplicate})。
+この実装はGo公式の@<b>{SliceTricks}@<fn>{slicetricks}の@<b>{In-place deduplicate}を参考にしています。
+SliceTricksではその他にもGopherが知るべきテクニックが満載なので是非読んでみてください。
+
+//footnote[slicetricks][@<href>{https://github.com/golang/go/wiki/SliceTricks#in-place-deduplicate-comparable}]
+
+//list[deduplicate][重複文字を排除して返す関数][go]{
+func deduplicate(s []string) []string {
+	var result []string
+	sort.Strings(s)
+	j := 0
+	for i := 1; i < len(s); i++ {
+		if s[j] == s[i] {
+			continue
+		}
+		j++
+		s[j] = s[i]
+	}
+	result = s[:j+1]
+	return result
+}
+//}
+
 
 実際に@<code>{BWTInverse}を使ってみるとBWTから元の文字列を復元できていることが分かります(@<list>{bwt-example2})。
 
@@ -299,6 +326,8 @@ func main() {
 	fmt.Println(bwtinv) // abracadabra
 }
 //}
+
+おめでとうございます。これでGoによるBWT実装ができました。
 
 == まとめ
 
