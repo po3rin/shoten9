@@ -117,8 +117,8 @@ BWTは文字列Tを構成する各文字を、それに続くSuffixをキーと�
 //}
 
 これは文字列Tを一文字ずつシフトしていき、それらをソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
-こちらの方法の方がBWTの解説によく利用されルカもしれません。
-ちなみにソートした後の最後の列を@<b>{L列}、最初の列を@<b>{F列}と呼び、F列の文字列を@@<m>{Tf}とします。@<m>{Tf}に関してはBWTの復元で利用します。
+こちらの方法の方がBWTの解説によく利用されるかもしれません。
+ちなみにソートした後の最後の列を@<b>{L列}、最初の列を@<b>{F列}と呼び、F列の文字列を@<m>{Tf}とします。@<m>{Tf}に関してはBWTの復元で利用します。
 
 //image[shift]["abracadarba$"からBWTを構築(シフト)][scale=1]{
 //}
@@ -165,7 +165,7 @@ func GetChar(t string, i int) string {
 @<code>{GetChar}関数はstringに対して1文字ずつアクセスするための関数です。
 ここで、Goの@<code>{string}に対してindexアクセスする動作をもう一度復習しましょう。
 Goでは文字コードをUTF-8で1byteごとに区切っています。
-その為。indexアクセスではUTF-8でのbyte表現の1byteだけにアクセスしてしまいます(@<list>{byte-access})。
+その為、indexアクセスではUTF-8でのbyte表現の1byteだけにアクセスしてしまいます(@<list>{byte-access})。
 
 //list[byte-access][stringにindexアクセス][go]{
 func main() {
