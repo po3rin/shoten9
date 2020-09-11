@@ -2,7 +2,13 @@ PREDEF:
   - preface.re
 
 CHAPS:
+<<<<<<< HEAD
   - po3rin.re
+=======
+  - micchie.re
+  - budougumi0617.re
+  - knsh14.re
+>>>>>>> 4aa5176bf797e56a630dc56cbcfd39a4134a04a0
 
 APPENDIX:
 
