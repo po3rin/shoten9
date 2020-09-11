@@ -223,15 +223,15 @@ for scanner.Scan() {
 //}
 
 ==== 文字列から字句を取り出す字句解析器を生成する
-@<tt>{DTSTART:19980118T073000Z}という文字列を@<list>{token_slice}に示す字句に変換します。
+@<tt>{DTSTART:19980118T073000Z}という文字列を@<list>{expected_generated_tokens}に示す字句の集合に変換します。
 字句は単なる文字列を意味のある単位にまとめたものです。
 英語圏ではトークンと呼びます。
 コード上でも@<tt>{Token}と表現します。
-たとえば@<list>{token_slice}の1行目は@<tt>{IDENT}という識別子を表す字句です。
+たとえば@<list>{expected_generated_tokens}の1つ目の要素は@<tt>{IDENT}という識別子を表す字句です。
 その@<tt>{IDENT}という種類の字句が@<tt>{DTSTART}という値を持っています。
 文字列から字句の列へ変換する処理を字句解析と呼びます。
 
-//list[token_slice][生成したい字句の集合]{
+//list[expected_generated_tokens][生成したい字句の集合]{
 type Token struct {
     Type  Type
     Value string
@@ -465,9 +465,12 @@ func ConvertContentLine(l *lexer.Lexer) (*ContentLine, error) {
 
 @<list>{content_line_style}でも示したように、コンテンツラインは@<tt>{NAME}、もしあれば@<tt>{PARAM}、@<tt>{VALUE}の順に並んでいます。
 
-初めに@<tt>{NAME}の変換します。
+初めに@<tt>{NAME}を変換します。
 具体的な実装は@<list>{implementation_get_name}に示します。
-@<tt>{NAME}として使えるのは文字列だけなので文字列が続く限り連結し@<tt>{NAME}の値とします。
+@<tt>{NAME}として使えるのは文字列だけです。
+そのため文字列が続く限り連結し@<tt>{NAME}の値とします。
+本来@<tt>{NAME}として使える文字はアルファベット、数字、ハイフンのみです。
+ですがそれは字句解析中にチェックしているため、再度チェックは行いません。
 @<tt>{NAME}が終わるのはコロン、セミコロンの場合のみです。
 コロンもしくはセミコロンの場合は正しく変換が終了したとみなし、連結した値を返します。
 文字列、コロン、セミコロン以外の字句があった場合、不適切な字句としてエラーを返します。
@@ -489,8 +492,8 @@ func getName(l *lexer.Lexer) (string, token.Token, error) {
 }
 //}
 
-次にパラメータの変換します。
-パラメータは@<tt>{;KEY=VALUE[,VALUE]}の繰り返しで記述されます。
+次に@<tt>{PARAM}の変換します。
+@<tt>{PARAM}は@<tt>{;KEY=VALUE[,VALUE]}の繰り返しで記述されます。
 @<list>{implementation_convert_content_line}のN行目の処理が大まかに@<tt>{PARAM}かどうかをチェックしています。
 もしセミコロンがなければ、その時点で@<tt>{PARAM}がないと分かります。
 なのでfor文でセミコロンが見つかる限りは@<tt>{PARAM}に変換します。
@@ -675,7 +678,7 @@ func TestContentLine(t *testing.T) {
 構文解析器の初期化を行います。
 構文解析器の定義と初期化を@<list>{definition_initialization_parser}に示します。
 
-//list[definition_initialization_parser][パーサーの型定義と初期化]{
+//list[definition_initialization_parser][パーサの型定義と初期化]{
 type Parser struct {
     Lines                []*contentline.ContentLine
     CurrentIndex         int
