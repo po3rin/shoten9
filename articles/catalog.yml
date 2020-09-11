@@ -2,6 +2,8 @@ PREDEF:
   - preface.re
 
 CHAPS:
+  - micchie.re
+  - budougumi0617.re
   - knsh14.re
 
 APPENDIX:
