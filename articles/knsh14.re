@@ -19,14 +19,14 @@ Goの構造体にするためには、ファイルの文字列を解釈し変換
 
 @<list>{example_input}の情報が記述されたファイルを@<list>{example_output}へ変換します。
 
-//list[example_input][]{
+//list[example_input][iCalendar形式のファイルの中身]{
 BEGIN:VCALENDAR
 PRODID:-//Google Inc//Google Calendar 70.9054//EN
 VERSION:2.0
 END:VCALENDAR
 //}
 
-//list[example_output][]{
+//list[example_output][変換されたiCalendarのオブジェクト]{
 &ical.Calender{
     ProdID: &property.ProdID{
       Parameter: parameter.Container{},
@@ -225,17 +225,21 @@ for scanner.Scan() {
 ==== 文字列から字句を取り出す字句解析器を生成する
 @<tt>{DTSTART:19980118T073000Z}という文字列を@<list>{token_slice}に示す字句に変換します。
 字句は単なる文字列を意味のある単位にまとめたものです。
+英語圏ではトークンと呼びます。
+コード上でも@<tt>{Token}と表現します。
 たとえば@<list>{token_slice}の1行目は@<tt>{IDENT}という識別子を表す字句です。
 その@<tt>{IDENT}という種類の字句が@<tt>{DTSTART}という値を持っています。
 文字列から字句の列へ変換する処理を字句解析と呼びます。
 
-//list[token_slice][生成したい字句のスライス]{
-[]token.Token{
-    {Type: token.IDENT, Value: "DTSTART"},
-    {Type: token.COLON, Value: ":"},
-    {Type: token.IDENT, Value: "19980118T073000Z"},
-    {Type: token.EOF, Value: ""},
+//list[token_slice][生成したい字句の集合]{
+type Token struct {
+    Type  Type
+    Value string
 }
+token.Token{Type: token.IDENT, Value: "DTSTART"}
+token.Token{Type: token.COLON, Value: ":"}
+token.Token{Type: token.IDENT, Value: "19980118T073000Z"}
+token.Token{Type: token.EOF, Value: ""}
 //}
 
 文字列からコンテンツラインへ変換する際に、字句への変換を挟むと変換処理が簡単になります。
@@ -404,7 +408,7 @@ func (l *Lexer) readString() string {
 字句解析器から字句が逐次取り出せました。
 字句解析の最後のステップとして字句解析器から取り出された字句を元にコンテンツラインを生成します。
 
-//list[implementation_convert_content_line][]{
+//list[implementation_convert_content_line][コンテンツラインへの変換する処理の実装]{
 type ContentLine struct {
     Name       string
     Parameters []Parameter
@@ -439,7 +443,10 @@ func ConvertContentLine(l *lexer.Lexer) (*ContentLine, error) {
     // EOFが続くまでVALUEを取得する。
     // VALUEは複数列になっている場合があるため、終わるまで行う
     if t.Type != token.COLON {
-        return nil, fmt.Errorf("expected \":\" but got %s[%s]", t.Type, t.Value)
+        return nil, fmt.Errorf("expected \":\" but got %s[%s]",
+            t.Type,
+            t.Value,
+        )
     }
     for t.Type != token.EOF && t.Type != token.ILLEGAL {
         v, token, err := getValue(l)
@@ -465,7 +472,7 @@ func ConvertContentLine(l *lexer.Lexer) (*ContentLine, error) {
 コロンもしくはセミコロンの場合は正しく変換が終了したとみなし、連結した値を返します。
 文字列、コロン、セミコロン以外の字句があった場合、不適切な字句としてエラーを返します。
 
-//list[implementation_get_name][]{
+//list[implementation_get_name][コンテンツラインの名前を取得する処理]{
 func getName(l *lexer.Lexer) (string, token.Token, error) {
     var n string
     for {
@@ -489,7 +496,7 @@ func getName(l *lexer.Lexer) (string, token.Token, error) {
 なのでfor文でセミコロンが見つかる限りは@<tt>{PARAM}に変換します。
 具体的な変換処理を@<list>{implementation_get_parameter}に示します。
 
-//list[implementation_get_parameter][]{
+//list[implementation_get_parameter][コンテンツラインのパラメータを取得する処理]{
 type Parameter struct {
     Name   string
     Values []string
@@ -544,7 +551,7 @@ func getParameter(l *lexer.Lexer) (Parameter, token.Token, error) {
 コロンの字句のチェックを通過したら、終了字句まで値を読み込み続けます。
 値を取得するための実装は@<list>{implementation_get_value}に示します。
 
-//list[implementation_get_value][]{
+//list[implementation_get_value][コンテンツラインから値を取得する処理]{
 func getValue(l *lexer.Lexer) (string, token.Token, error) {
     var val string
     for {
@@ -571,7 +578,7 @@ func getValue(l *lexer.Lexer) (string, token.Token, error) {
 みやすさのためにテストケースは省略しています。
 入力に対して正しい値が取得できているかだけではなく、不正な値を変換した際に正しくエラーを返すかも確認します。
 
-//list[implementation_test_content_line][]{
+//list[implementation_test_content_line][コンテンツラインへ変換するテストの実装]{
 func TestContentLine(t *testing.T) {
     t.Parallel()
     tests := []struct {
@@ -631,7 +638,7 @@ func TestContentLine(t *testing.T) {
 本来は字句解析で得られた字句からfor文や式の抽象構文木への変換するのが構文解析です。
 しかし、iCalendar形式の変換はiCalendarのコンポーネントへ変換します。
 
-//list[input_convert_component][]{
+//list[input_convert_component][入力のコンテンツライン]{
 []*contentline.ContentLine{
     {
         Name:   "BEGIN",
@@ -648,7 +655,7 @@ func TestContentLine(t *testing.T) {
 },
 //}
 
-//list[output_convert_component][]{
+//list[output_convert_component][@<list>{input_convert_component}から期待する出力]{
 &ical.Calender{
     Version: &property.Version{
         Parameter: parameter.Container{},
@@ -668,7 +675,7 @@ func TestContentLine(t *testing.T) {
 構文解析器の初期化を行います。
 構文解析器の定義と初期化を@<list>{definition_initialization_parser}に示します。
 
-//list[definition_initialization_parser][]{
+//list[definition_initialization_parser][パーサーの型定義と初期化]{
 type Parser struct {
     Lines                []*contentline.ContentLine
     CurrentIndex         int
@@ -695,7 +702,7 @@ func NewParser(cls []*contentline.ContentLine) *Parser {
 ==== コンポーネントの開始と終了
 カレンダーコンポーネントの変換を開始する処理を@<list>{parser_parse_calendar_component}に示します。
 
-//list[parser_parse_calendar_component][]{
+//list[parser_parse_calendar_component][カレンダーオブジェクトのパースを開始する処理]{
 func (p *Parser) parse() (*ical.Calender, error) {
     l := p.getCurrentLine()
     switch pname := property.Name(l.Name); pname {
@@ -734,7 +741,7 @@ func (p *Parser) parse() (*ical.Calender, error) {
 
 カレンダーコンポーネントの変換を終了する処理を@<list>{parser_parse_calendar_component}に示します。
 
-//list[parser_end_parse_calendar_component][]{
+//list[parser_end_parse_calendar_component][カレンダーオブジェクトのパースを終了する処理]{
 func (p *Parser) parseCalender() (*ical.Calender, error) {
     p.nextLine()
     p.currentComponentType = component.TypeCalendar
@@ -765,54 +772,73 @@ func (p *Parser) parseCalender() (*ical.Calender, error) {
 
 プロパティが値のチェックをする例としてカレンダーのバージョンを表すプロパティの定義と値を設定するメソッドを@<list>{property_version_definition}に示します。
 
-//list[property_version_definition][]{
+//list[property_version_definition][バージョンプロパティとその値を設定するメソッドの定義]{
 // Version is VERSION
 // https://tools.ietf.org/html/rfc5545#section-3.7.4
 type Version struct {
-	Parameter parameter.Container
-	Min, Max  types.Text
+    Parameter parameter.Container
+    Min, Max  types.Text
 }
 
-func (v *Version) SetVersion(params parameter.Container, value types.Text) error {
-	if value == "" {
-		return ErrInputIsEmpty
-	}
-	isMatch, err := regexp.MatchString(`^\d+.\d+$`, string(value))
-	if err != nil {
-		return err
-	}
-	if isMatch {
-		v.Parameter = params
-		v.Max = value
-		return nil
-	}
-	isMatch, err = regexp.MatchString(`^\d+.\d+;\d+.\d+$`, string(value))
-	if err != nil {
-		return err
-	}
-	if !isMatch {
-		return fmt.Errorf("not required format, allow X.Y or W.X;Y.Z")
-	}
-	versions := strings.SplitN(string(value), ";", 2)
-	return v.UpdateVersion(params, types.NewText(versions[0]), types.NewText(versions[1]))
+func (v *Version) SetVersion(
+    params parameter.Container,
+    value types.Text,
+) error {
+    if value == "" {
+        return ErrInputIsEmpty
+    }
+    isMatch, err := regexp.MatchString(
+        `^\d+.\d+$`,
+        string(value),
+    )
+    if err != nil {
+        return err
+    }
+    if isMatch {
+        v.Parameter = params
+        v.Max = value
+        return nil
+    }
+    isMatch, err = regexp.MatchString(
+        `^\d+.\d+;\d+.\d+$`,
+        string(value),
+    )
+    if err != nil {
+        return err
+    }
+    if !isMatch {
+        return fmt.Errorf("not required format, allow X.Y or W.X;Y.Z")
+    }
+    versions := strings.SplitN(string(value), ";", 2)
+    return v.UpdateVersion(
+        params,
+        types.NewText(versions[0]),
+        types.NewText(versions[1]),
+    )
 }
 
-func (v *Version) UpdateVersion(params parameter.Container, min, max types.Text) error {
-	a, err := semver.NewVersion(string(min))
-	if err != nil {
-		return fmt.Errorf("convert %s to semvar: %w", min, err)
-	}
-	b, err := semver.NewVersion(string(min))
-	if err != nil {
-		return fmt.Errorf("convert %s to semvar: %w", max, err)
-	}
-	if a.GreaterThan(b) {
-		return fmt.Errorf("min version %s is greater than max version %s", min, max)
-	}
-	v.Parameter = params
-	v.Min = min
-	v.Max = max
-	return nil
+func (v *Version) UpdateVersion(
+    params parameter.Container,
+    min, max types.Text,
+    ) error {
+    a, err := semver.NewVersion(string(min))
+    if err != nil {
+        return fmt.Errorf("convert %s to semvar: %w", min, err)
+    }
+    b, err := semver.NewVersion(string(min))
+    if err != nil {
+        return fmt.Errorf("convert %s to semvar: %w", max, err)
+    }
+    if a.GreaterThan(b) {
+        return fmt.Errorf("min ver %s is greater than max ver %s",
+            min,
+            max,
+        )
+    }
+    v.Parameter = params
+    v.Min = min
+    v.Max = max
+    return nil
 }
 //}
 
@@ -856,16 +882,16 @@ func (v *Version) UpdateVersion(params parameter.Container, min, max types.Text)
 
 値の変換の例として@<tt>{Integer}型の値への変換を@<list>{conversion_integer}に示します。
 
-//list[conversion_integer][]{
+//list[conversion_integer][整数型の定義と変換処理]{
 // Integer is defined in https://tools.ietf.org/html/rfc5545#section-3.3.8
 type Integer int64
 
 func NewInteger(v string) (Integer, error) {
-	i, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("parse input[v] to int64: %w", err)
-	}
-	return Integer(i), nil
+    i, err := strconv.ParseInt(v, 10, 64)
+    if err != nil {
+        return 0, fmt.Errorf("parse input[v] to int64: %w", err)
+    }
+    return Integer(i), nil
 }
 //}
 
@@ -895,36 +921,36 @@ func NewInteger(v string) (Integer, error) {
 iCalendar形式をパースするためには対象のファイルを読み込む必要があります。
 @<list>{implementation_receive_ioreader}に実装を示します。
 
-//list[implementation_receive_ioreader][]{
+//list[implementation_receive_ioreader][io.Readerを受け取り文字列を読み込む処理]{
 func Parse(r io.Reader) (*ical.Calender, error) {
-	return parseFromScanner(bufio.NewScanner(r))
+    return parseFromScanner(bufio.NewScanner(r))
 }
 
 func scanLines(scanner *bufio.Scanner) ([]string, error) {
-	var res []string
-	for scanner.Scan() {
-		l := scanner.Text()
-		switch {
-		case strings.HasPrefix(l, " "):
-			res[len(res)-1] += "\n" + strings.TrimPrefix(l, " ")
-		case strings.HasPrefix(l, "\t"):
-			res[len(res)-1] += "\n" + strings.TrimPrefix(l, "\t")
-			continue
-		default:
-			res = append(res, l)
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-	return res, nil
+    var res []string
+    for scanner.Scan() {
+        l := scanner.Text()
+        switch {
+        case strings.HasPrefix(l, " "):
+            res[len(res)-1] += "\n" + strings.TrimPrefix(l, " ")
+        case strings.HasPrefix(l, "\t"):
+            res[len(res)-1] += "\n" + strings.TrimPrefix(l, "\t")
+            continue
+        default:
+            res = append(res, l)
+        }
+    }
+    if err := scanner.Err(); err != nil {
+        return nil, err
+    }
+    return res, nil
 }
 
 func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
-	lines, err := scanLines(scanner)
-	if err != nil {
-		return nil, err
-	}
+    lines, err := scanLines(scanner)
+    if err != nil {
+        return nil, err
+    }
     // ... 文字列からコンテンツラインへ変換、構文解析による変換処理をおこなうが省略しています
 }
 //}
@@ -936,34 +962,38 @@ func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
 さらに、@<tt>{net/http}パッケージを利用してインターネット経由で取得したiCalendar形式のデータをそのまま変換に渡すことができます。
 @<list>{example_usage}に示すコードが実行できます。
 
-//list[example_usage][]{
+//list[example_usage][iCalendarパーサを利用するサンプルコード]{
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "net/http"
 
-	"github.com/knsh14/ical"
-	"github.com/knsh14/ical/parser"
+    "github.com/knsh14/ical"
+    "github.com/knsh14/ical/parser"
 )
 
 func main() {
-	res, err := http.Get("https://www.google.com/calendar/ical/japanese__ja%40holiday.calendar.google.com/public/basic.ics")
-	if err != nil {
-		log.Fatal(err)
-	}
-	body := res.Body
-	defer body.Close()
-	cal, err := parser.Parse(body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, c := range cal.Components {
-		if event, ok := c.(*ical.Event); ok {
-			fmt.Println(event.Summary.Value)
-		}
-	}
+    res, err := http.Get(
+        "https://www.google.com/calendar/"
+        +"ical/japanese__ja%40holiday.calendar.google.com/"
+        +"public/basic.ics",
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+    body := res.Body
+    defer body.Close()
+    cal, err := parser.Parse(body)
+    if err != nil {
+        log.Fatal(err)
+    }
+    for _, c := range cal.Components {
+        if event, ok := c.(*ical.Event); ok {
+            fmt.Println(event.Summary.Value)
+        }
+    }
 }
 //}
 
@@ -972,31 +1002,34 @@ func main() {
 そのため、一度文字列のスライスを生成した後は並列に処理することで、パフォーマンスを向上させることができます。
 並列に処理する実装を@<list>{implementation_process_converting}に示します。
 
-//list[implementation_process_converting][]{
+//list[implementation_process_converting][並列に文字列をコンテンツラインへ返還する処理]{
 func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
-	lines, err := scanLines(scanner)
-	if err != nil {
-		return nil, err
-	}
-	var eg errgroup.Group
-	contentlines := make([]*contentline.ContentLine, len(lines))
-	for i := range lines {
-		i := i
-		eg.Go(func() error {
-			l := lexer.New(lines[i])
-			cl, err := contentline.ConvertContentLine(l)
-			if err != nil {
-				return fmt.Errorf("convert content line in line %d: %w", i, err)
-			}
-			contentlines[i] = cl
-			return nil
-		})
-	}
-	if err := eg.Wait(); err != nil {
-		return nil, err
-	}
-	p := NewParser(contentlines)
-	return p.parse()
+    lines, err := scanLines(scanner)
+    if err != nil {
+        return nil, err
+    }
+    var eg errgroup.Group
+    contentlines := make([]*contentline.ContentLine, len(lines))
+    for i := range lines {
+        i := i
+        eg.Go(func() error {
+            l := lexer.New(lines[i])
+            cl, err := contentline.ConvertContentLine(l)
+            if err != nil {
+                return fmt.Errorf("convert content line in line %d: %w",
+                    i,
+                    err,
+                )
+            }
+            contentlines[i] = cl
+            return nil
+        })
+    }
+    if err := eg.Wait(); err != nil {
+        return nil, err
+    }
+    p := NewParser(contentlines)
+    return p.parse()
 }
 //}
 
