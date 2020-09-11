@@ -194,7 +194,7 @@ $ goplantuml -recursive path/to/gofiles > filename.uml
 UMLで出力したいクラスをGoで書きます。
 この章では、bearというディレクトリを作成し、3つのGoのファイル@<code>{bear.go}、@<code>{blackbear.go}、@<code>{polerbear.go}を作成します。
 
-最初に、@<code>{Bear}という継承元のクラスを用意します。
+最初に、@<code>{Bear}というクラスを用意します。
 
 //emlist[bear/bear.go][go]{
 package bear
