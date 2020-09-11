@@ -190,11 +190,11 @@ $ goplantuml -recursive path/to/gofiles > filename.uml
 
 //pagebreak
 
-=== Goでクラスを書く
-UMLで出力したいクラスをGoで書きます。
+=== GoでUMLを書く
+UMLで出力したい構造をGoで書きます。
 この章では、bearというディレクトリを作成し、3つのGoのファイル@<code>{bear.go}、@<code>{blackbear.go}、@<code>{polerbear.go}を作成します。
 
-最初に、@<code>{Bear}というクラスを用意します。
+最初に、@<code>{Bear}という構造体を用意します。
 
 //emlist[bear/bear.go][go]{
 package bear
@@ -264,7 +264,7 @@ func (p *PolerBear) Swim() {
 .
 //}
 
-このクラスを呼び出し、実行してみましょう。
+実際にBearやBlackBear、PolerBearを呼び出し、実行してみましょう。
 
 //emlist[main.go][go]{
 func main() {
@@ -363,7 +363,7 @@ namespace bear {
 //}
 
 この@<code>{bear.uml}をPlantUMLで生成したUML図は次のとおりです。Bear、BlackBear、PolerBearの関係性が見える図が出力されました。
-//image[002][Bearクラス][width=0.5\maxwidth]
+//image[002][Bear UML][width=0.5\maxwidth]
 
 
 ===[column] Goの委譲と継承
