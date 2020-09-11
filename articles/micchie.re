@@ -188,6 +188,8 @@ $ goplantuml -recursive path/to/gofiles > filename.uml
  : -title string
     図のタイトルを引数として指定することができます。
 
+//pagebreak
+
 === Goでクラスを書く
 UMLで出力したいクラスをGoで書きます。
 この章では、bearというディレクトリを作成し、3つのGoのファイル@<code>{bear.go}、@<code>{blackbear.go}、@<code>{polerbear.go}を作成します。
@@ -210,15 +212,15 @@ type Bear struct {
 }
 
 func (b *Bear) Sleep() {
-	fmt.Println("眠る")
+	fmt.Printf("%s%sは眠る\n", b.Color, b.Name)
 }
 
 func (b *Bear) Eat() {
-	fmt.Println("食べる")
+	fmt.Printf("%s%s食べる\n", b.Color, b.Name)
 }
 //}
 
-@<code>{BlackBear}は@<code>{Bear}を継承し、@<code>{climbing}というprivateメソッドを持っています。
+@<code>{BlackBear}には@<code>{Bear}が埋め込まれ、@<code>{Climbing}というメソッドを持っています。
 
 //emlist[bear/blackbear.go][go]{
 package bear
@@ -229,12 +231,12 @@ type BlackBear struct {
 	Bear
 }
 
-func (b *BlackBear) climbing() {
-	fmt.Println("木登りをする")
+func (b *BlackBear) Climbing() {
+	fmt.Printf("%s%sは木登りをする\n", b.Color, b.Name)
 }
 //}
 
-@<code>{PolerBear}は@<code>{Bear}を継承し、@<code>{swim}というprivateメソッドを持っています。
+@<code>{PolerBear}にも@<code>{Bear}が埋め込まれ、@<code>{Swim}というメソッドを持っています。
 
 //emlist[bear/polerbear.go][go]{
 package bear
@@ -245,8 +247,8 @@ type PolerBear struct {
 	Bear
 }
 
-func (p *PolerBear) swim() {
-	fmt.Println("海で泳ぐ")
+func (p *PolerBear) Swim() {
+	fmt.Printf("%s%sは海で泳ぐ\n", p.Color, p.Name)
 }
 //}
 
@@ -260,6 +262,53 @@ func (p *PolerBear) swim() {
 .
 .
 .
+//}
+
+このクラスを呼び出し、実行してみましょう。
+
+//emlist[main.go][go]{
+func main() {
+	b := bear.Bear{}
+	b.Name = "Bear"
+
+	b.Sleep()
+	b.Eat()
+
+	fmt.Println("-----")
+
+	bb := bear.BlackBear{}
+	bb.Name = "熊"
+	bb.Color = "黒"
+
+	bb.Sleep()
+	bb.Eat()
+	bb.Climbing()
+
+	fmt.Println("-----")
+
+	pb := bear.PolerBear{}
+	pb.Name = "クマ"
+	pb.Color = "シロ"
+
+	pb.Sleep()
+	pb.Eat()
+	pb.Swim()
+}
+//}
+
+次のように、出力されます。
+
+//cmd{
+Bearは眠る
+Bear食べる
+-----
+黒熊は眠る
+黒熊食べる
+黒熊は木登りをする
+-----
+シロクマは眠る
+シロクマ食べる
+シロクマは海で泳ぐ
 //}
 
 次に、@<code>{bear}ディレクトリを指定して@<code>{goplantuml}を実行し、@<code>{bear.uml}というファイルにUMLを書き出しましょう。
@@ -297,11 +346,11 @@ namespace bear {
 
     }
     class BlackBear << (S,Aquamarine) >> {
-        - climbing() 
+        + Climbing() 
 
     }
     class PolerBear << (S,Aquamarine) >> {
-        - swim() 
+        + Swim() 
 
     }
 }
@@ -313,8 +362,17 @@ namespace bear {
 @enduml
 //}
 
-この@<code>{bear.uml}をPlantUMLで生成したUML図は次のとおりです。
+この@<code>{bear.uml}をPlantUMLで生成したUML図は次のとおりです。Bear、BlackBear、PolerBearの関係性が見える図が出力されました。
 //image[002][Bearクラス][width=0.5\maxwidth]
+
+
+===[column] Goの委譲と継承
+Goには継承という概念が実装されていません。そのかわり、構造体を埋め込むことで委譲（delegation）を実装することができます。
+この章でその説明をすることはありませんが、構造体の埋め込みについては、Effective GoのEmbedding@<fn>{Embedding}に詳しく説明されています。
+
+//footnote[Embedding][@<href>{https://golang.org/doc/effective_go.html#embedding}]
+
+===[/column]
 
 == さいごに
 PlantUMLはUMLをテキストで直感的に書くことができる柔軟なツールです。PlantUMLをGoで生成できるようにすることで、Goも設計も楽しい状態をつくり出すことができます。
