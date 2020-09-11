@@ -7,6 +7,10 @@
 
 //footnote[github_repo_link][@<href>{https://github.com/knsh14/ical}]
 
+== Goの実行環境
+OSはmacOS 10.14.6です。
+Goのバージョンはgo1.14 darwin/amd64です。
+
 == 概要
 iCalendar形式はRFC 5545@<fn>{rfc_5545_link}で詳細な仕様が定義されています。
 
@@ -26,7 +30,7 @@ VERSION:2.0
 END:VCALENDAR
 //}
 
-//list[example_output][変換されたiCalendarのオブジェクト]{
+//list[example_output][変換されたiCalendarのオブジェクト][go]{
 &ical.Calender{
     ProdID: &property.ProdID{
       Parameter: parameter.Container{},
@@ -129,7 +133,7 @@ SUMMARY:体育の日
 END:VEVENT
 //}
 
-//list[expected_output_content_line][期待する出力結果であるコンテンツラインのスライス]{
+//list[expected_output_content_line][期待する出力結果であるコンテンツラインのスライス][go]{
 type ContentLine struct {
   Name       string
   Parameters []Parameter
@@ -208,7 +212,7 @@ type Parameter struct {
 すべてのチェックが終わると、コンテンツラインになる文字列のスライスに変換されます。
 このスライスの各要素に対してコンテンツラインへの変換します。
 
-//list[build_raw_lines_to_string_slice][文字列の集合から行ごとの文字列のスライスへの変換]{
+//list[build_raw_lines_to_string_slice][文字列の集合から行ごとの文字列のスライスへの変換][go]{
 var res []string
 for scanner.Scan() {
     l := scanner.Text()
@@ -233,7 +237,7 @@ for scanner.Scan() {
 その@<tt>{IDENT}という種類の字句が@<tt>{DTSTART}という値を持っています。
 文字列から字句の列へ変換する処理を字句解析と呼びます。
 
-//list[expected_generated_tokens][生成したい字句の集合]{
+//list[expected_generated_tokens][生成したい字句の集合][go]{
 type Token struct {
     Type  Type
     Value string
@@ -252,7 +256,7 @@ token.Token{Type: token.EOF, Value: ""}
 ATTENDEE;DELEGATED-FROM="mailto:jsmith@example.com":mailto:jdoe@example.com
 //}
 
-//list[example_output_hard_parsing][@<list>{example_input_hard_parsing}から期待する変換結果]{
+//list[example_output_hard_parsing][@<list>{example_input_hard_parsing}から期待する変換結果][go]{
 []*ContentLine{
   {
     Name: "ATTENDEE",
@@ -294,7 +298,7 @@ iCalendarを字句解析するために必要な字句の種類は次の5つで�
 
 @<list>{definition_and_initial_lexer}に字句解析器の定義と初期化の実装を示します。
 
-//list[definition_and_initial_lexer][字句解析器の定義と初期化]{
+//list[definition_and_initial_lexer][字句解析器の定義と初期化][go]{
 type Lexer struct {
     input        []rune // 入力値
     position     int // 字句解析が完了した位置
@@ -335,7 +339,7 @@ func (l *Lexer) readChar() {
 
 字句解析器が字句のスライスに変換するためのメソッドの実装を@<list>{implementation_next_token}に示します。
 
-//list[implementation_next_token][字句を返す関数の実装]{
+//list[implementation_next_token][字句を返す関数の実装][go]{
 func (l *Lexer) NextToken() token.Token {
     var tok token.Token
 
@@ -410,7 +414,7 @@ func (l *Lexer) readString() string {
 字句解析器から字句が逐次取り出せました。
 字句解析の最後のステップとして字句解析器から取り出された字句を元にコンテンツラインを生成します。
 
-//list[implementation_convert_content_line][コンテンツラインへの変換する処理の実装]{
+//list[implementation_convert_content_line][コンテンツラインへの変換する処理の実装][go]{
 type ContentLine struct {
     Name       string
     Parameters []Parameter
@@ -477,7 +481,7 @@ func ConvertContentLine(l *lexer.Lexer) (*ContentLine, error) {
 コロンもしくはセミコロンの場合は正しく変換が終了したとみなし、連結した値を返します。
 文字列、コロン、セミコロン以外の字句があった場合、不適切な字句としてエラーを返します。
 
-//list[implementation_get_name][コンテンツラインの名前を取得する処理]{
+//list[implementation_get_name][コンテンツラインの名前を取得する処理][go]{
 func getName(l *lexer.Lexer) (string, token.Token, error) {
     var n string
     for {
@@ -501,7 +505,7 @@ func getName(l *lexer.Lexer) (string, token.Token, error) {
 なので@<code>{for}文でセミコロンが見つかる限りは@<tt>{PARAM}に変換します。
 具体的な変換処理を@<list>{implementation_get_parameter}に示します。
 
-//list[implementation_get_parameter][コンテンツラインのパラメータを取得する処理]{
+//list[implementation_get_parameter][コンテンツラインのパラメータを取得する処理][go]{
 type Parameter struct {
     Name   string
     Values []string
@@ -556,7 +560,7 @@ func getParameter(l *lexer.Lexer) (Parameter, token.Token, error) {
 コロンの字句のチェックを通過したら、終了字句まで値を読み込み続けます。
 値を取得するための実装は@<list>{implementation_get_value}に示します。
 
-//list[implementation_get_value][コンテンツラインから値を取得する処理]{
+//list[implementation_get_value][コンテンツラインから値を取得する処理][go]{
 func getValue(l *lexer.Lexer) (string, token.Token, error) {
     var val string
     for {
@@ -583,7 +587,7 @@ func getValue(l *lexer.Lexer) (string, token.Token, error) {
 みやすさのためにテストケースは省略しています。
 正しい入力に対して正しい値が取得できるかだけではなく、不正な入力を変換した場合に期待した@<code>{error}型の値を返すかも確認します。
 
-//list[implementation_test_content_line][コンテンツラインへ変換するテストの実装]{
+//list[implementation_test_content_line][コンテンツラインへ変換するテストの実装][go]{
 func TestContentLine(t *testing.T) {
     t.Parallel()
     tests := []struct {
@@ -643,7 +647,7 @@ func TestContentLine(t *testing.T) {
 本来は字句解析で得られた字句から@<code>{for}文や式の抽象構文木への変換するのが構文解析です。
 しかし、iCalendar形式の変換はiCalendarのコンポーネントへ変換します。
 
-//list[input_convert_component][入力のコンテンツライン]{
+//list[input_convert_component][入力のコンテンツライン][go]{
 []*contentline.ContentLine{
     {
         Name:   "BEGIN",
@@ -660,7 +664,7 @@ func TestContentLine(t *testing.T) {
 },
 //}
 
-//list[output_convert_component][@<list>{input_convert_component}から期待する出力]{
+//list[output_convert_component][@<list>{input_convert_component}から期待する出力][go]{
 &ical.Calender{
     Version: &property.Version{
         Parameter: parameter.Container{},
@@ -680,7 +684,7 @@ func TestContentLine(t *testing.T) {
 構文解析器の初期化を行います。
 構文解析器の定義と初期化を@<list>{definition_initialization_parser}に示します。
 
-//list[definition_initialization_parser][パーサの型定義と初期化]{
+//list[definition_initialization_parser][パーサの型定義と初期化][go]{
 type Parser struct {
     Lines                []*contentline.ContentLine
     CurrentIndex         int
@@ -707,7 +711,7 @@ func NewParser(cls []*contentline.ContentLine) *Parser {
 ==== コンポーネントの開始と終了
 カレンダーコンポーネントの変換を開始する処理を@<list>{parser_parse_calendar_component}に示します。
 
-//list[parser_parse_calendar_component][カレンダーオブジェクトのパースを開始する処理]{
+//list[parser_parse_calendar_component][カレンダーオブジェクトのパースを開始する処理][go]{
 func (p *Parser) parse() (*ical.Calender, error) {
     l := p.getCurrentLine()
     switch pname := property.Name(l.Name); pname {
@@ -746,7 +750,7 @@ func (p *Parser) parse() (*ical.Calender, error) {
 
 カレンダーコンポーネントの変換を終了する処理を@<list>{parser_parse_calendar_component}に示します。
 
-//list[parser_end_parse_calendar_component][カレンダーオブジェクトのパースを終了する処理]{
+//list[parser_end_parse_calendar_component][カレンダーオブジェクトのパースを終了する処理][go]{
 func (p *Parser) parseCalender() (*ical.Calender, error) {
     p.nextLine()
     p.currentComponentType = component.TypeCalendar
@@ -777,7 +781,7 @@ func (p *Parser) parseCalender() (*ical.Calender, error) {
 
 プロパティが値のチェックをする例としてカレンダーのバージョンを表すプロパティの定義と値を設定するメソッドを@<list>{property_version_definition}に示します。
 
-//list[property_version_definition][バージョンプロパティとその値を設定するメソッドの定義]{
+//list[property_version_definition][バージョンプロパティとその値を設定するメソッドの定義][go]{
 // Version is VERSION
 // https://tools.ietf.org/html/rfc5545#section-3.7.4
 type Version struct {
@@ -881,13 +885,13 @@ func (v *Version) UpdateVersion(
 
 //footnote[rfc_type_definition_link][@<href>{https://tools.ietf.org/html/rfc5545#section-3.3}]
 
-@<tt>{Float}型や@<tt>{Text}型などいくつかの型はGoで定義されている組込みを使うことができます。
+@<tt>{Float}型や@<tt>{Text}型などいくつかの型はGoで定義されている組み込み型を使うことができます。
 @<tt>{Time}型や@<tt>{URI}型はGoの標準ライブラリで定義されている型を用いて代用できます。
 @<tt>{Duration}型や@<tt>{Reccurence Rule}型は標準ライブラリなどでは定義されていないため、独自に定義します。
 
 値の変換の例として@<tt>{Integer}型の値への変換を@<list>{conversion_integer}に示します。
 
-//list[conversion_integer][整数型の定義と変換処理]{
+//list[conversion_integer][整数型の定義と変換処理][go]{
 // Integer is defined in https://tools.ietf.org/html/rfc5545#section-3.3.8
 type Integer int64
 
@@ -901,7 +905,7 @@ func NewInteger(v string) (Integer, error) {
 //}
 
 
-@<tt>{Integer}型は、Goの組込みにある@<tt>{int64}型を利用したユーザー定義型にします。
+@<tt>{Integer}型は、Goの組み込み型にある@<tt>{int64}型を利用したユーザー定義型にします。
 @<tt>{int64}型をそのまま使わずに型を定義したのには理由があります。
 プロパティには複数種類の型を値として保持するものがあります。
 それらの型はGoの型から見ると共通でないものもあります。
@@ -926,7 +930,7 @@ func NewInteger(v string) (Integer, error) {
 iCalendar形式をパースするためには対象のファイルを読み込む必要があります。
 @<list>{implementation_receive_ioreader}に実装を示します。
 
-//list[implementation_receive_ioreader][io.Readerを受け取り文字列を読み込む処理]{
+//list[implementation_receive_ioreader][io.Readerを受け取り文字列を読み込む処理][go]{
 func Parse(r io.Reader) (*ical.Calender, error) {
     return parseFromScanner(bufio.NewScanner(r))
 }
@@ -967,7 +971,7 @@ func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
 さらに、@<tt>{net/http}パッケージを利用してインターネット経由で取得したiCalendar形式のデータをそのまま変換に渡すことができます。
 @<list>{example_usage}に示すコードが実行できます。
 
-//list[example_usage][iCalendarパーサを利用するサンプルコード]{
+//list[example_usage][iCalendarパーサを利用するサンプルコード][go]{
 package main
 
 import (
@@ -1007,7 +1011,7 @@ func main() {
 そのため、一度文字列のスライスを生成した後は並列に処理することで、パフォーマンスを向上させることができます。
 並列に処理する実装を@<list>{implementation_process_converting}に示します。
 
-//list[implementation_process_converting][並列に文字列をコンテンツラインへ返還する処理]{
+//list[implementation_process_converting][並列に文字列をコンテンツラインへ返還する処理][go]{
 func parseFromScanner(scanner *bufio.Scanner) (*ical.Calender, error) {
     lines, err := scanLines(scanner)
     if err != nil {
