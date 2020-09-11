@@ -82,7 +82,7 @@ func main() {
 }
 //}
 
-Goの@<code>{index/suffixarray}パッケージではSuffix Arrayの構築を@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}というアルゴリズムを利用しています。
+Goの@<code>{index/suffixarray}パッケージ@<fn>{sa}ではSuffix Arrayの構築を@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}というアルゴリズムを利用しています。
 SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられかなり高速です。
 
 //footnote[sais][@<href>{https://www.researchgate.net/publication/224176324_Two_Efficient_Algorithms_for_Linear_Time_Suffix_Array_Construction}]
