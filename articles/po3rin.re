@@ -36,7 +36,9 @@ func main() {
 === Suffix(接尾辞)
 
 文字列@<code>{T}の任意の@<code>{i}番目から最後までの部分文字列を@<b>{Suffix(接尾辞)}と呼びます。
-GoにはSuffixとして部分文字列が存在するかをチェックする関数である@<code>{strings.HasSuffix}があります(@<list>{hassuffix})。
+GoにはSuffixとして部分文字列が存在するかをチェックする関数である@<code>{strings.HasSuffix}@<fn>{hassuffix}があります(@<list>{hassuffix})。
+
+//footnote[hassuffix][@<href>{https://pkg.go.dev/strings?tab=doc#HasSuffix}]
 
 //list[hassuffix][GoにはSuffixに関する関数がある][go]{
 func main() {
@@ -46,7 +48,9 @@ func main() {
 }
 //}
 
-この他にもSuffixをトリミングする@<code>{strings.TrimSuffix}などもあります。
+この他にもSuffixをトリミングする@<code>{strings.TrimSuffix}@<fn>{trimsuffix}などもあります。
+
+//footnote[trimsuffix][@<href>{https://pkg.go.dev/strings?tab=doc#TrimSuffix}]
 
 === Suffix Array
 
@@ -58,7 +62,9 @@ func main() {
 
 実装は紹介しませんが、@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。
 Suffixをソートしているので二分探索で探索が可能です。
-GoではSuffix Arrayが標準パッケージで提供されています(@<list>{suffix})。
+GoではSuffix Arrayが標準パッケージ@<code>{index/suffixarray}@<fn>{sa}で提供されています(@<list>{suffix})。
+
+//footnote[sa][@<href>{https://pkg.go.dev/index/suffixarray}]
 
 //list[suffix][index/suffixarray パッケージ][go]{
 import (
