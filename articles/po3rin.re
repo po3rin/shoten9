@@ -3,7 +3,7 @@
 こんにちは、pon(@po3rin)@<fn>{po3rin}です。本章ではGoによる実装を通して、
 @<b>{Burrows-Wheeler変換(BWT)}@<fn>{bwt}という文字列変換アルゴリズムを紹介します。
 BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、後にその有用性が広まり、全文検索などでも利用されています。
-このアルゴリズムを理解することで、データ圧縮や、全文検索などを理解する為の足がかりになるでしょう。
+このアルゴリズムを理解することがデータ圧縮や、全文検索などを理解する為の足がかりになるでしょう。
 
 //footnote[po3rin][@<href>{https://twitter.com/po3rin}]
 //footnote[bwt][@<href>{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.121.6177}]
@@ -21,7 +21,8 @@ BWTはもともと、データ圧縮などの為に開発されたアルゴリ�
 
 === 辞書式順序
 
-@<b>{辞書式順序}とは文字列の大小の順序の決め方です。文字列T,Uを先頭から1文字ずつ比較していき、初めて異なる文字が出てきた時に、その大小関係で順序が決まります。
+@<b>{辞書式順序}とは文字列の大小の順序の決め方です。文字列T,Uを先頭から1文字ずつ比較していき、
+初めて異なる文字が出てきた時に、その大小関係で順序が決まります。
 Goの文字列比較では辞書式順序が採用されています(@<list>{string-order})。
 
 //list[string-order][Goの文字列比較は辞書式順序で大小が決まる][go]{
@@ -35,7 +36,7 @@ func main() {
 === Suffix(接尾辞)
 
 文字列@<code>{T}の任意の@<code>{i}番目から最後までの部分文字列を@<b>{Suffix(接尾辞)}と呼びます。
-GoにはSuffixとして部分文字列が存在するかをチェックする関数である@<code>{HasSuffix}があります(@<list>{hassuffix})。
+GoにはSuffixとして部分文字列が存在するかをチェックする関数である@<code>{strings.HasSuffix}があります(@<list>{hassuffix})。
 
 //list[hassuffix][GoにはSuffixに関する関数がある][go]{
 func main() {
@@ -45,7 +46,7 @@ func main() {
 }
 //}
 
-この他にもSuffixをトリムする@<code>{TrimSuffix}などもあります。
+この他にもSuffixをトリムする@<code>{strings.TrimSuffix}などもあります。
 
 === Suffix Array
 
@@ -55,7 +56,8 @@ func main() {
 //image[suffixarray]["abracadarba"からSuffix Arrayを構築し、文字列パターンマッチ][scale=1]{
 //}
 
-実装は紹介しませんが、@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。Suffixをソートしているので二分探索で探索が可能です。
+実装は紹介しませんが、@<img>{suffixarray}からも分かるように、Suffix Arrayは文字列のパターンマッチに利用できます。
+Suffixをソートしているので二分探索で探索が可能です。
 GoではSuffix Arrayが標準パッケージで提供されています(@<list>{suffix})。
 
 //list[suffix][index/suffixarray パッケージ][go]{
@@ -81,12 +83,15 @@ SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられかな�
 
 == Burrows-Wheeler変換
 
-それではいよいよ本題です。@<b>{Burrows-Wheeler変換(BWT)}はブロックソートとも呼ばれ、文字列の可逆変換のアルゴリズムです。
-BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、後にその有用性が広まり、全文検索などでも利用されています。
-実際にBWTはデータ圧縮プログラムである@<b>{bzip2}の内部のアルゴリズムとしても採用されており、文字列を圧縮しやすい順番に文字を可逆変換します。
+それではいよいよ本題です。@<b>{Burrows-Wheeler変換(BWT)}はブロックソートとも呼ばれ、
+文字列の可逆変換のアルゴリズムです。BWTはもともと、データ圧縮などの為に開発されたアルゴリズムですが、
+後にその有用性が広まり、全文検索などでも利用されています。
+実際にBWTはデータ圧縮プログラムである@<b>{bzip2}の内部のアルゴリズムとしても採用されており、
+文字列を圧縮しやすい順番に文字を可逆変換します。
 
-まずは、@<code>{"abracadabra"}という文字列からBWTを行う場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、他の文字より小さい文字)を末尾に追加し、
-@<code>{"abracadabra$"}という形にした後、BWTを行うと@<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形に変換できます。
+まずは、@<code>{"abracadabra"}という文字列からBWTを行う場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、
+他の文字より小さい文字)を末尾に追加し、@<code>{"abracadabra$"}という形にした後にBWTを行うと,
+@<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形に変換できます。
 当然、BWTは可逆変換なので、@<code>{"ard$rcaaaabb"}から@<code>{"abracadabra$"}という元の文字列に戻せます(@<list>{bwt-example})。
 
 //list[bwt-example][BWT関数での文字列変換の例][go]{
@@ -104,7 +109,8 @@ func main() {
 
 ではその仕組みをGoで実装しながら追っていきましょう。
 BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです。ただし、$の後続のSuffixは元の文字列そのものとします。
-@<code>{"abracadabra"}の文字列を入力とした例では@<img>{suffixarray_build}のように操作をすることでBWT後の@<code>{"ard$rcaaaabb"}という文字列を取得できます。
+@<code>{"abracadabra"}の文字列を入力とした例では、
+@<img>{suffixarray_build}のように操作をすることでBWT後の@<code>{"ard$rcaaaabb"}という文字列を取得できます。
 
 
 //image[suffixarray_build]["abracadarba$"からBWTを構築][scale=1]{
@@ -332,4 +338,4 @@ func main() {
 == まとめ
 
 今回はGoでBurrows-Wheeler変換について紹介しました。
-Burrows-Wheeler変換は色んな分野に応用され、奥が深いアルゴリズムなので、是非みなさんも調べてみて下さい。
+Burrows-Wheeler変換は色んな分野に応用され、奥が深いアルゴリズムなので、是非みなさんも深ぼってみて下さい。
