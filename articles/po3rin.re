@@ -1,4 +1,4 @@
-= Goで入門するBurrows-Wheeler変換
+= Go+Burrows-Wheeler変換で入門する文字列解析の世界
 
 こんにちは@pon@<fn>{po3rin}です。本章ではGoによる実装を通して、
 @<b>{Burrows-Wheeler変換(BWT)}@<fn>{bwt}という文字列変換アルゴリズムを紹介します。BWTはブロックソートとも呼ばれ、文字列の可逆変換のアルゴリズムです。
