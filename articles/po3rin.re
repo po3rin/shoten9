@@ -46,7 +46,7 @@ func main() {
 }
 //}
 
-この他にもSuffixをトリムする@<code>{strings.TrimSuffix}などもあります。
+この他にもSuffixをトリミングする@<code>{strings.TrimSuffix}などもあります。
 
 === Suffix Array
 
@@ -89,7 +89,7 @@ SA-ISによるSuffix Array構築の計算量は@<m>{O(n)}に抑えられかな�
 実際にBWTはデータ圧縮プログラムである@<b>{bzip2}の内部のアルゴリズムとしても採用されており、
 文字列を圧縮しやすい順番に文字を可逆変換します。
 
-まずは、@<code>{"abracadabra"}という文字列からBWTを行う場合をみていきます。まずマーカーとなる文字@<code>{"$"}(他には現れない、
+まずは、@<code>{"abracadabra"}という文字列からBWTを行う場合をみていきます。マーカーとなる文字@<code>{"$"}(他には現れない、
 他の文字より小さい文字)を末尾に追加し、@<code>{"abracadabra$"}という形にした後にBWTを行うと,
 @<code>{"ard$rcaaaabb"}という同じ文字が連続で並ぶ圧縮しやすい形に変換できます。
 当然、BWTは可逆変換なので、@<code>{"ard$rcaaaabb"}から@<code>{"abracadabra$"}という元の文字列に戻せます(@<list>{bwt-example})。
@@ -108,7 +108,7 @@ func main() {
 === BWTをGoで実装する
 
 ではその仕組みをGoで実装しながら追っていきましょう。
-BWTは文字列Tを構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです。ただし、$の後続のSuffixは元の文字列そのものとします。
+BWTは文字列@<code>{T}を構成する各文字を、それに続くSuffixをキーとして辞書式順序にソートしたものです。ただし、@<code>{$}の後続のSuffixは元の文字列そのものとします。
 @<code>{"abracadabra"}の文字列を入力とした例では、
 @<img>{suffixarray_build}のように操作をすることでBWT後の@<code>{"ard$rcaaaabb"}という文字列を取得できます。
 
@@ -117,7 +117,7 @@ BWTは文字列Tを構成する各文字を、それに続くSuffixをキーと�
 //}
 
 これは文字列Tを一文字ずつシフトしていき、それらをソートした結果の最後の文字を結合する操作と同じです(@<img>{shift})。
-こちらの方法の方がBWTの解説によく利用されるかもしれません。
+こちらのほうがBWTの解説によく利用されるかもしれません。
 ちなみにソートした後の最後の列を@<b>{L列}、最初の列を@<b>{F列}と呼び、F列の文字列を@<m>{Tf}とします。@<m>{Tf}に関してはBWTの復元で利用します。
 
 //image[shift]["abracadarba$"からBWTを構築(シフト)][scale=1]{
@@ -194,7 +194,7 @@ func main() {
 //}
 
 今回はSuffix Arrayを構築してBWTを構築しましたが、Suffix Arrayの構築を高速化することでBWTの構築を高速に行えます。
-興味のある方は前に紹介した@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}を調べてみてください。
+興味のある方はSuffix Arrayの節で紹介した@<b>{SA-IS(Suffix Array - Induced Sorting)}@<fn>{sais}を調べてみてください。
 
 == BWT文字列の復元
 
