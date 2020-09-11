@@ -117,7 +117,18 @@ VSCodeを使ってLeetcodeの問題を解く場合、VSCodeプラグインを利
 
 //footnote[vsc_plugin][@<href>{https://marketplace.visualstudio.com/items?itemName=LeetCode.vscode-leetcode}]
 
-プラグインインストール後、VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Open User Settings}を選択します。
+VSCodeプラグインを使うと、VSCodeで次のような操作ができるようになります。
+
+ * 問題を一覧、問題文を確認する。
+ * 問題を難易度やジャンルで検索する
+ * 選択した問題の提出用雛形コードをローカルに生成する。
+ * 実装したコードを使ってオンラインサーバのテストを実施する。
+ * 実装したコードをオンラインサーバへ提出する。
+
+==== プラグインの初期設定
+
+プラグインをインストールしてVSCode上でLeetCodeへログインします。このときGitHubやgmailを使ってログインができると簡単です。
+VSCode上で@<tt>{⌘+Shift+P}を押下し、@<kw>{Open User Settings}を選択します。
 その後、@<kw>{設定の検索}で@<tt>{leetcode}を検索します。
 @<kw>{LeetCode: Default Languages}で@<tt>{golang}を選択しておきます。
 LeetCodeプラグインが生成するファイルはデフォルト設定だとホームディレクトリ配下の隠しフォルダに保存されていきます。
